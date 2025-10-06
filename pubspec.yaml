@@ -11,14 +11,21 @@ dependencies:
     sdk: flutter
 
   cupertino_icons: ^1.0.6
-  provider: ^6.1.2
-  google_fonts: ^6.2.1
+  provider: ^6.1.5+1
+  google_fonts: ^6.3.2
+  firebase_auth: ^6.1.0
+  image_picker: ^1.2.0
+  flutter_staggered_animations: ^1.1.1
+  timeago: ^3.7.1
+  audioplayers: ^6.5.1
+  path_provider: ^2.1.5
+  uuid: ^4.5.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^3.0.0
+  flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
 
 flutter_icons:
