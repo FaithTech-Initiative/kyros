@@ -1,10 +1,11 @@
 
 import 'package:flutter/material.dart';
-import 'package:kyros/screens/bible_screen.dart';
+import 'package:kyros/screens/bible_lookup_screen.dart';
+import 'package:kyros/screens/collections_screen.dart';
 import 'package:kyros/screens/home_screen.dart';
-import 'package:kyros/screens/my_wiki_screen.dart';
 import 'package:kyros/screens/note_taking_page.dart';
 import 'package:kyros/screens/study_tools_screen.dart';
+import 'package:kyros/widgets/app_drawer.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -15,13 +16,12 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  bool _isSearchActive = false;
 
   static const List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
-    BibleScreen(),
+    BibleLookupScreen(),
     StudyToolsScreen(),
-    MyWikiScreen(),
+    CollectionsScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -30,52 +30,21 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
-  void _toggleSearch() {
-    setState(() {
-      _isSearchActive = !_isSearchActive;
-    });
-  }
-
-  void _navigateToNoteEditor() {
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const NoteTakingPage()),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: _isSearchActive
-            ? const TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search...',
-                  border: InputBorder.none,
-                ),
-              )
-            : const Text('Sermon Notes'),
+        title: const Text('Kyros'),
         actions: [
           IconButton(
-            icon: Icon(_isSearchActive ? Icons.close : Icons.search),
-            onPressed: _toggleSearch,
+            icon: const Icon(Icons.search),
+            onPressed: () {},
           ),
-          const CircleAvatar(
-            child: Text('P'),
-          ),
-          const SizedBox(width: 16),
         ],
       ),
-      drawer: const Drawer(
-        child: Center(
-          child: Text('Side Drawer'),
-        ),
-      ),
+      drawer: const AppDrawer(),
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToNoteEditor,
-        child: const Icon(Icons.add),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -92,15 +61,22 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Study Tools',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.article),
-            label: 'My Wiki',
+            icon: Icon(Icons.collections),
+            label: 'Collections',
           ),
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: Theme.of(context).colorScheme.primary,
-        unselectedItemColor: Colors.grey,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const NoteTakingPage(),
+            ),
+          );
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }

@@ -1,116 +1,79 @@
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:kyros/screens/main_screen.dart';
-import 'package:provider/provider.dart';
+import 'package:kyros/screens/bible_screen.dart';
+import 'package:kyros/screens/home_screen.dart';
+import 'package:kyros/widgets/app_drawer.dart';
 
 void main() {
-  runApp(
-    ChangeNotifierProvider(
-      create: (context) => ThemeProvider(),
-      child: const KyrosApp(),
-    ),
-  );
+  runApp(const MyApp());
 }
 
-// ThemeProvider class to manage the theme state
-class ThemeProvider with ChangeNotifier {
-  ThemeMode _themeMode = ThemeMode.system;
-
-  ThemeMode get themeMode => _themeMode;
-
-  void toggleTheme() {
-    _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
-    notifyListeners();
-  }
-
-  void setSystemTheme() {
-    _themeMode = ThemeMode.system;
-    notifyListeners();
-  }
-}
-
-class KyrosApp extends StatelessWidget {
-  const KyrosApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Custom color palette
-    const Color primaryColor = Color(0xFF008080); // Teal
-    const Color secondaryColor = Color(0xFFC8A2C8); // Lilac
-    const Color lightBackgroundColor = Color(0xFFF0F8FF); // Alice Blue
-    const Color darkBackgroundColor = Color(0xFF29465B); // Dark Slate Blue
-
-    // Define a common TextTheme
-    final TextTheme appTextTheme = TextTheme(
-      displayLarge: GoogleFonts.oswald(fontSize: 57, fontWeight: FontWeight.bold),
-      titleLarge: GoogleFonts.roboto(fontSize: 22, fontWeight: FontWeight.w500),
-      bodyMedium: GoogleFonts.openSans(fontSize: 14),
+    return MaterialApp(
+      title: 'Kyros',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: const MainScreen(),
     );
+  }
+}
 
-    // Light Theme
-    final ThemeData lightTheme = ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryColor,
-        secondary: secondaryColor,
-        brightness: Brightness.light,
-      ),
-      scaffoldBackgroundColor: lightBackgroundColor,
-      textTheme: appTextTheme,
-      appBarTheme: AppBarTheme(
-        backgroundColor: primaryColor,
-        foregroundColor: Colors.white,
-        titleTextStyle: GoogleFonts.oswald(fontSize: 24, fontWeight: FontWeight.bold),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.white,
-          backgroundColor: primaryColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          textStyle: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-      ),
-    );
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
 
-    // Dark Theme
-    final ThemeData darkTheme = ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryColor,
-        secondary: secondaryColor,
-        brightness: Brightness.dark,
-      ),
-      scaffoldBackgroundColor: darkBackgroundColor,
-      textTheme: appTextTheme.apply(bodyColor: Colors.white, displayColor: Colors.white),
-      appBarTheme: AppBarTheme(
-        backgroundColor: darkBackgroundColor.withBlue(100),
-        foregroundColor: Colors.white,
-        titleTextStyle: GoogleFonts.oswald(fontSize: 24, fontWeight: FontWeight.bold),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          foregroundColor: darkBackgroundColor,
-          backgroundColor: secondaryColor,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-          textStyle: GoogleFonts.roboto(fontSize: 16, fontWeight: FontWeight.w500),
-        ),
-      ),
-    );
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
 
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, child) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'Kyros',
-          theme: lightTheme,
-          darkTheme: darkTheme,
-          themeMode: themeProvider.themeMode,
-          home: const MainScreen(),
-        );
-      },
+class _MainScreenState extends State<MainScreen> {
+  int _selectedIndex = 0;
+  final List<Widget> _screens = [
+    const HomeScreen(),
+    const BibleScreen(),
+  ];
+
+  final List<String> _titles = [
+    'Home',
+    'Bible',
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_titles[_selectedIndex]),
+      ),
+      drawer: const AppDrawer(),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _screens,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book),
+            label: 'Bible',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+      ),
     );
   }
 }
