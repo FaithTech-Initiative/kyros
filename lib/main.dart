@@ -20,15 +20,16 @@ void main() async {
     androidProvider: AndroidProvider.debug,
   );
 
-  final prefs = await SharedPreferences.getInstance();
-  final hasSeenGetStarted = prefs.getBool('hasSeenGetStarted') ?? false;
-
-  runApp(MyApp(hasSeenGetStarted: hasSeenGetStarted));
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  final bool hasSeenGetStarted;
-  const MyApp({super.key, required this.hasSeenGetStarted});
+  const MyApp({super.key});
+
+  Future<bool> _getHasSeenGetStarted() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('hasSeenGetStarted') ?? false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,13 +58,22 @@ class MyApp extends StatelessWidget {
 
               return MaterialApp(
                 title: 'Kyros',
-                //debugShowCheckedModeBanner: false,
                 theme: lightTheme,
                 darkTheme: darkTheme,
                 themeMode: themeProvider.themeMode,
-                home: hasSeenGetStarted
-                    ? const SplashScreen()
-                    : const GetStartedScreen(),
+                home: FutureBuilder<bool>(
+                  future: _getHasSeenGetStarted(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const CircularProgressIndicator();
+                    }
+                    if (snapshot.hasData && snapshot.data!) {
+                      return const SplashScreen();
+                    } else {
+                      return const GetStartedScreen();
+                    }
+                  },
+                ),
                 routes: {
                   '/main': (context) => const MainScreen(),
                 },
