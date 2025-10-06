@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:kyros/screens/home_screen.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -22,6 +23,12 @@ class AuthScreenState extends State<AuthScreen> {
   final _passwordController = TextEditingController();
   
   bool _isLogin = true;
+
+  final List<String> _carouselText = [
+    "(Capture Insight.)",
+    "(Deepen Your Study)",
+    "(Build Your Personal Wiki)",
+  ];
 
   Future<void> _signInWithEmailAndPassword() async {
     try {
@@ -132,7 +139,7 @@ class AuthScreenState extends State<AuthScreen> {
                   isDarkMode
                       ? 'assets/images/logo_dark.svg'
                       : 'assets/images/logo.svg',
-                  height: 120,
+                  height: 180,
                 ),
                 const SizedBox(height: 20),
                 Text(
@@ -144,7 +151,9 @@ class AuthScreenState extends State<AuthScreen> {
                     color: theme.colorScheme.onSurface,
                   ),
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 16),
+                _buildCarousel(),
+                const SizedBox(height: 24),
                 _buildAuthCard(theme),
               ],
             ),
@@ -153,6 +162,39 @@ class AuthScreenState extends State<AuthScreen> {
       ),
     );
   }
+
+  Widget _buildCarousel() {
+  return CarouselSlider(
+    options: CarouselOptions(
+      height: 40.0,
+      autoPlay: true,
+      autoPlayInterval: const Duration(seconds: 3),
+      enlargeCenterPage: true,
+      viewportFraction: 0.9,
+      aspectRatio: 2.0,
+      initialPage: 2,
+    ),
+    items: _carouselText.map((text) {
+      return Builder(
+        builder: (BuildContext context) {
+          return Container(
+            width: MediaQuery.of(context).size.width,
+            margin: const EdgeInsets.symmetric(horizontal: 5.0),
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.lato(
+                fontSize: 16,
+                fontStyle: FontStyle.italic,
+                color: Theme.of(context).colorScheme.onSurface.withAlpha(153),
+              ),
+            ),
+          );
+        },
+      );
+    }).toList(),
+  );
+}
 
   Widget _buildAuthCard(ThemeData theme) {
     return Container(
@@ -192,11 +234,15 @@ class AuthScreenState extends State<AuthScreen> {
   Widget _buildNameField() {
     return TextField(
       controller: _nameController,
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         labelText: 'Name',
-        prefixIcon: Icon(Icons.person),
-        border: OutlineInputBorder(
+        prefixIcon: const Icon(Icons.person),
+        border: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(12.0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: const BorderRadius.all(Radius.circular(12.0)),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2.0),
         ),
       ),
     );
@@ -205,11 +251,15 @@ class AuthScreenState extends State<AuthScreen> {
   Widget _buildEmailField() {
     return TextField(
       controller: _emailController,
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         labelText: 'Email address',
-        prefixIcon: Icon(Icons.email),
-        border: OutlineInputBorder(
+        prefixIcon: const Icon(Icons.email),
+        border: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(12.0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: const BorderRadius.all(Radius.circular(12.0)),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2.0),
         ),
       ),
       keyboardType: TextInputType.emailAddress,
@@ -219,11 +269,15 @@ class AuthScreenState extends State<AuthScreen> {
   Widget _buildPasswordField() {
     return TextField(
       controller: _passwordController,
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         labelText: 'Password',
-        prefixIcon: Icon(Icons.lock),
-        border: OutlineInputBorder(
+        prefixIcon: const Icon(Icons.lock),
+        border: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(12.0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: const BorderRadius.all(Radius.circular(12.0)),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2.0),
         ),
       ),
       obscureText: true,
@@ -303,13 +357,12 @@ class AuthScreenState extends State<AuthScreen> {
   }
 
   Widget _buildSocialButton(String imagePath, VoidCallback onPressed) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         shape: const CircleBorder(),
         padding: const EdgeInsets.all(16),
-        side: BorderSide(color: isDarkMode ? Colors.white54 : Colors.black26),
+        side: BorderSide(color: Theme.of(context).colorScheme.primary),
       ),
       child: Image.asset(imagePath, height: 24.0),
     );

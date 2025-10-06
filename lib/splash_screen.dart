@@ -20,14 +20,9 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkAuthStatus() async {
-    // Delay for a short period to show the splash screen
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (!mounted) return;
-
-    // Listen for auth state changes
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
+    Timer(const Duration(seconds: 2), () {
       if (!mounted) return;
+      User? user = FirebaseAuth.instance.currentUser;
       if (user == null) {
         // User is signed out
         Navigator.of(context).pushReplacement(

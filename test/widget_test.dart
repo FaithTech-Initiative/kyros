@@ -13,7 +13,7 @@ import 'package:kyros/main.dart';
 void main() {
   testWidgets('Renders home screen', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const MyApp(hasSeenGetStarted: true));
 
     // Verify that the home screen is rendered.
     expect(find.text('Home'), findsOneWidget);
