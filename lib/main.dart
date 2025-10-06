@@ -1,7 +1,10 @@
 
 import 'package:flutter/material.dart';
-import 'package:kyros/screens/bible_screen.dart';
+import 'package:kyros/screens/bible_lookup_screen.dart';
 import 'package:kyros/screens/home_screen.dart';
+import 'package:kyros/screens/my_wiki_screen.dart';
+import 'package:kyros/screens/note_taking_page.dart';
+import 'package:kyros/screens/study_tools_screen.dart';
 import 'package:kyros/widgets/app_drawer.dart';
 
 void main() {
@@ -33,14 +36,12 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const BibleScreen(),
-  ];
 
-  final List<String> _titles = [
-    'Home',
-    'Bible',
+  static const List<Widget> _widgetOptions = <Widget>[
+    HomeScreen(),
+    BibleLookupScreen(),
+    StudyToolsScreen(),
+    MyWikiScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -53,12 +54,17 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_titles[_selectedIndex]),
+        title: const Text('Kyros'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {},
+          ),
+        ],
       ),
       drawer: const AppDrawer(),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _screens,
+      body: Center(
+        child: _widgetOptions.elementAt(_selectedIndex),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -67,12 +73,31 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.book),
+            icon: Icon(Icons.menu_book),
             label: 'Bible',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.build),
+            label: 'Study Tools',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history_edu),
+            label: 'My Wiki',
           ),
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
+        type: BottomNavigationBarType.fixed,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => const NoteTakingPage(),
+            ),
+          );
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
