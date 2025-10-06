@@ -1,4 +1,4 @@
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:kyros/models/note_model.dart';
 import 'package:kyros/widgets/bible_panel.dart';
@@ -7,7 +7,8 @@ import 'package:uuid/uuid.dart';
 
 class NoteTakingPage extends StatefulWidget {
   final Note? note;
-  const NoteTakingPage({super.key, this.note});
+  final String? userId;
+  const NoteTakingPage({super.key, this.note, this.userId});
 
   @override
   State<NoteTakingPage> createState() => _NoteTakingPageState();
@@ -36,7 +37,7 @@ class _NoteTakingPageState extends State<NoteTakingPage> {
     }
   }
 
-  void _saveNote() {
+  Future<void> _saveNote() async {
     final title = _titleController.text;
     final content = _contentController.text;
     if (title.isNotEmpty || content.isNotEmpty || _imagePath != null) {
@@ -47,8 +48,20 @@ class _NoteTakingPageState extends State<NoteTakingPage> {
         createdAt: widget.note?.createdAt ?? DateTime.now(),
         imagePath: _imagePath,
       );
-      // Here you would typically save the note to a database or state management solution
-      Navigator.of(context).pop(note);
+
+      final noteData = note.toMap();
+
+      if (widget.userId != null) {
+        final noteRef = FirebaseFirestore.instance
+            .collection('users')
+            .doc(widget.userId)
+            .collection('notes')
+            .doc(note.id);
+        await noteRef.set(noteData, SetOptions(merge: true));
+      }
+      if(mounted){
+        Navigator.of(context).pop();
+      }
     }
   }
 
