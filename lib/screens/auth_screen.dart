@@ -132,7 +132,7 @@ class AuthScreenState extends State<AuthScreen> {
                   isDarkMode
                       ? 'assets/images/logo_dark.svg'
                       : 'assets/images/logo.svg',
-                  height: 80,
+                  height: 120,
                 ),
                 const SizedBox(height: 20),
                 Text(
