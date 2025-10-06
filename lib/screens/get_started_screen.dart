@@ -16,7 +16,6 @@ class GetStartedScreenState extends State<GetStartedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -32,13 +31,13 @@ class GetStartedScreenState extends State<GetStartedScreen> {
           // Gradient overlay
           Positioned.fill(
             child: Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent,
-                    Colors.black.withOpacity(0.7),
+                    Color(0xB3000000), // Black with 70% opacity
                   ],
                 ),
               ),
@@ -64,7 +63,7 @@ class GetStartedScreenState extends State<GetStartedScreen> {
                   'A new way to connect with your faith community.',
                   style: GoogleFonts.poppins(
                     fontSize: 20,
-                    color: Colors.white.withOpacity(0.8),
+                    color: const Color(0xCCFFFFFF), // White with 80% opacity
                   ),
                 ),
                 const SizedBox(height: 48),
