@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "896490665397",
+    "project_id": "kyrosapp-100f7",
+    "storage_bucket": "kyrosapp-100f7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:896490665397:android:3b879838f5e3ae1c2d55fc",
+        "android_client_info": {
+          "package_name": "com.example.kyros"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3x7-FkkrF3zr1Eosjy0DMI0nrtakguwU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
