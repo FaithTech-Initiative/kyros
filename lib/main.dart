@@ -6,10 +6,8 @@ import 'package:kyros/app_theme.dart';
 import 'package:kyros/firebase_options.dart';
 import 'package:kyros/screens/auth_screen.dart';
 import 'package:kyros/screens/get_started_screen.dart';
-import 'package:kyros/splash_screen.dart';
 import 'package:kyros/theme_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,11 +23,6 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
-  Future<bool> _getHasSeenGetStarted() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('hasSeenGetStarted') ?? false;
-  }
 
   @override
   Widget build(BuildContext context) {
