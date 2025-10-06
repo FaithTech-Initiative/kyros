@@ -195,7 +195,9 @@ class AuthScreenState extends State<AuthScreen> {
       decoration: const InputDecoration(
         labelText: 'Name',
         prefixIcon: Icon(Icons.person),
-        border: OutlineInputBorder(),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12.0)),
+        ),
       ),
     );
   }
@@ -206,7 +208,9 @@ class AuthScreenState extends State<AuthScreen> {
       decoration: const InputDecoration(
         labelText: 'Email address',
         prefixIcon: Icon(Icons.email),
-        border: OutlineInputBorder(),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12.0)),
+        ),
       ),
       keyboardType: TextInputType.emailAddress,
     );
@@ -218,7 +222,9 @@ class AuthScreenState extends State<AuthScreen> {
       decoration: const InputDecoration(
         labelText: 'Password',
         prefixIcon: Icon(Icons.lock),
-        border: OutlineInputBorder(),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(12.0)),
+        ),
       ),
       obscureText: true,
     );

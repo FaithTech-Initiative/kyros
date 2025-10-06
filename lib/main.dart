@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:kyros/app_theme.dart';
 import 'package:kyros/firebase_options.dart';
 import 'package:kyros/screens/main_screen.dart';
 import 'package:kyros/splash_screen.dart';
@@ -31,106 +31,28 @@ class MyApp extends StatelessWidget {
         builder: (context, themeProvider, child) {
           return DynamicColorBuilder(
             builder: (ColorScheme? lightDynamic, ColorScheme? darkDynamic) {
-              ColorScheme lightColorScheme;
-              ColorScheme darkColorScheme;
+              ThemeData lightTheme;
+              ThemeData darkTheme;
 
               if (lightDynamic != null && darkDynamic != null && themeProvider.isDynamic) {
-                lightColorScheme = lightDynamic;
-                darkColorScheme = darkDynamic;
+                lightTheme = ThemeData(
+                  useMaterial3: true,
+                  colorScheme: lightDynamic,
+                );
+                darkTheme = ThemeData(
+                  useMaterial3: true,
+                  colorScheme: darkDynamic,
+                );
               } else {
-                lightColorScheme = ColorScheme.fromSeed(
-                  seedColor: Colors.deepPurple,
-                  brightness: Brightness.light,
-                );
-                darkColorScheme = ColorScheme.fromSeed(
-                  seedColor: Colors.deepPurple,
-                  brightness: Brightness.dark,
-                );
+                lightTheme = AppTheme.lightTheme;
+                darkTheme = AppTheme.darkTheme;
               }
-
-              final textTheme = TextTheme(
-                displayLarge: GoogleFonts.oswald(
-                  fontSize: 57,
-                  fontWeight: FontWeight.bold,
-                  textStyle: TextStyle(
-                      color: lightColorScheme.onPrimaryContainer),
-                ),
-                titleLarge: GoogleFonts.roboto(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w500,
-                  textStyle: TextStyle(
-                      color: lightColorScheme.onSecondaryContainer),
-                ),
-                bodyMedium: GoogleFonts.openSans(
-                  fontSize: 14,
-                  textStyle:
-                      TextStyle(color: lightColorScheme.onTertiaryContainer),
-                ),
-              );
 
               return MaterialApp(
                 title: 'Kyros',
                 debugShowCheckedModeBanner: false,
-                theme: ThemeData(
-                  useMaterial3: true,
-                  colorScheme: lightColorScheme,
-                  textTheme: textTheme,
-                  appBarTheme: AppBarTheme(
-                    backgroundColor: lightColorScheme.primary,
-                    foregroundColor: lightColorScheme.onPrimary,
-                    titleTextStyle: GoogleFonts.oswald(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  elevatedButtonTheme: ElevatedButtonThemeData(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: lightColorScheme.onPrimary,
-                      backgroundColor: lightColorScheme.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      textStyle: GoogleFonts.roboto(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
-                darkTheme: ThemeData(
-                  useMaterial3: true,
-                  colorScheme: darkColorScheme,
-                  textTheme: textTheme,
-                  appBarTheme: AppBarTheme(
-                    backgroundColor: darkColorScheme.primary,
-                    foregroundColor: darkColorScheme.onPrimary,
-                    titleTextStyle: GoogleFonts.oswald(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  elevatedButtonTheme: ElevatedButtonThemeData(
-                    style: ElevatedButton.styleFrom(
-                      foregroundColor: darkColorScheme.onPrimary,
-                      backgroundColor: darkColorScheme.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      textStyle: GoogleFonts.roboto(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ),
+                theme: lightTheme,
+                darkTheme: darkTheme,
                 themeMode: themeProvider.themeMode,
                 home: const SplashScreen(),
                 routes: {

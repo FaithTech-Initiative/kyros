@@ -1,9 +1,8 @@
-
 import 'package:flutter/material.dart';
 
 class ThemeProvider with ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
-  bool _isDynamic = true;
+  bool _isDynamic = false; // Default to false, so the custom theme is the default
   double _fontScaleFactor = 1.0;
 
   ThemeMode get themeMode => _themeMode;
@@ -27,7 +26,7 @@ class ThemeProvider with ChangeNotifier {
 
   void reset() {
     _themeMode = ThemeMode.system;
-    _isDynamic = true;
+    _isDynamic = false;
     _fontScaleFactor = 1.0;
     notifyListeners();
   }

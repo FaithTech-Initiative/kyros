@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:kyros/theme_provider.dart';
 import 'package:provider/provider.dart';
