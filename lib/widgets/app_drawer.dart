@@ -11,7 +11,8 @@ import 'package:kyros/screens/settings_screen.dart';
 import 'package:kyros/screens/trash_screen.dart';
 
 class AppDrawer extends StatelessWidget {
-  const AppDrawer({super.key});
+  final String userId;
+  const AppDrawer({super.key, required this.userId});
 
   Future<void> _handleLogout(BuildContext context) async {
     await FirebaseAuth.instance.signOut();

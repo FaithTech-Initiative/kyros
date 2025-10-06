@@ -6,7 +6,6 @@ import 'package:kyros/app_theme.dart';
 import 'package:kyros/firebase_options.dart';
 import 'package:kyros/screens/auth_screen.dart';
 import 'package:kyros/screens/get_started_screen.dart';
-import 'package:kyros/screens/main_screen.dart';
 import 'package:kyros/splash_screen.dart';
 import 'package:kyros/theme_provider.dart';
 import 'package:provider/provider.dart';
@@ -63,21 +62,8 @@ class MyApp extends StatelessWidget {
                 theme: lightTheme,
                 darkTheme: darkTheme,
                 themeMode: themeProvider.themeMode,
-                home: FutureBuilder<bool>(
-                  future: _getHasSeenGetStarted(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const CircularProgressIndicator();
-                    }
-                    if (snapshot.hasData && snapshot.data!) {
-                      return const SplashScreen();
-                    } else {
-                      return const GetStartedScreen();
-                    }
-                  },
-                ),
+                home: const GetStartedScreen(),
                 routes: {
-                  '/main': (context) => const MainScreen(),
                   '/auth': (context) => const AuthScreen(),
                 },
               );

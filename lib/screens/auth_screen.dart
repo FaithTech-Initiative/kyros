@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:kyros/screens/home_screen.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -115,8 +114,9 @@ class AuthScreenState extends State<AuthScreen> {
 
   void _navigateToHome(User? user) {
     if (user != null) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => HomeScreen(userId: user.uid)),
+      Navigator.of(context).pushReplacementNamed(
+        '/main',
+        arguments: {'userId': user.uid},
       );
     }
   }

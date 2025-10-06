@@ -1,9 +1,9 @@
-
 import 'package:flutter/material.dart';
 import 'package:kyros/widgets/app_drawer.dart';
 
 class MainScreen extends StatelessWidget {
-  const MainScreen({super.key});
+  final String userId;
+  const MainScreen({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -11,7 +11,7 @@ class MainScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Kyros'),
       ),
-      drawer: const AppDrawer(),
+      drawer: AppDrawer(userId: userId),
       body: const Center(
         child: Text('Welcome to Kyros!'),
       ),
