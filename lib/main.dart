@@ -4,6 +4,7 @@ import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:kyros/app_theme.dart';
 import 'package:kyros/firebase_options.dart';
+import 'package:kyros/screens/auth_screen.dart';
 import 'package:kyros/screens/get_started_screen.dart';
 import 'package:kyros/screens/main_screen.dart';
 import 'package:kyros/splash_screen.dart';
@@ -58,6 +59,7 @@ class MyApp extends StatelessWidget {
 
               return MaterialApp(
                 title: 'Kyros',
+                debugShowCheckedModeBanner: false,
                 theme: lightTheme,
                 darkTheme: darkTheme,
                 themeMode: themeProvider.themeMode,
@@ -76,6 +78,7 @@ class MyApp extends StatelessWidget {
                 ),
                 routes: {
                   '/main': (context) => const MainScreen(),
+                  '/auth': (context) => const AuthScreen(),
                 },
               );
             },

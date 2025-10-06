@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:kyros/screens/auth_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -40,9 +39,7 @@ class GetStartedScreenState extends State<GetStartedScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('hasSeenGetStarted', true);
     if (!mounted) return;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => const AuthScreen()),
-    );
+    Navigator.of(context).pushReplacementNamed('/auth');
   }
 
   @override
