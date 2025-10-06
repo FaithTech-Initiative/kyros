@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class GetStartedScreen extends StatefulWidget {
@@ -11,10 +10,7 @@ class GetStartedScreen extends StatefulWidget {
 }
 
 class GetStartedScreenState extends State<GetStartedScreen> {
-  void _onGetStarted() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('hasSeenGetStarted', true);
-    if (!mounted) return;
+  void _onGetStarted() {
     Navigator.of(context).pushReplacementNamed('/auth');
   }
 
@@ -24,69 +20,80 @@ class GetStartedScreenState extends State<GetStartedScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.primary,
-      body: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SvgPicture.asset(
-                    isDarkMode
-                        ? 'assets/images/logo_dark.svg'
-                        : 'assets/images/logo.svg',
-                    height: 180,
-                    colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                  ),
-                  const SizedBox(height: 40),
-                  Text(
-                    "Welcome to Kyros",
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.lato(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    "Your personal note and companion for deep and meaningful Bible study.",
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.lato(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white.withAlpha(204),
-                    ),
-                  ),
-                ],
-              ),
+      body: Stack(
+        children: [
+          // Background image
+          Positioned.fill(
+            child: SvgPicture.asset(
+              'assets/images/get_started_background.svg',
+              fit: BoxFit.cover,
             ),
-            Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Center(
-                child: ElevatedButton(
-                  onPressed: _onGetStarted,
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(200, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    backgroundColor: Colors.white,
-                    foregroundColor: theme.colorScheme.primary,
-                  ),
-                  child: Text(
-                    'Get Started',
-                    style: GoogleFonts.lato(
-                        fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
+          ),
+          // Gradient overlay
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.7),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+          // Content
+          Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Welcome to Kyros',
+                  style: GoogleFonts.poppins(
+                    fontSize: 48,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'A new way to connect with your faith community.',
+                  style: GoogleFonts.poppins(
+                    fontSize: 20,
+                    color: Colors.white.withOpacity(0.8),
+                  ),
+                ),
+                const SizedBox(height: 48),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _onGetStarted,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: theme.colorScheme.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      'Get Started',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onPrimary,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
