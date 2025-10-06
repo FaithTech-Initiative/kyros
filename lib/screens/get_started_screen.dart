@@ -12,6 +12,7 @@ class GetStartedScreen extends StatefulWidget {
 }
 
 class GetStartedScreenState extends State<GetStartedScreen> {
+  int _current = 0;
   final List<Map<String, String>> _carouselItems = [
     {
       "title": "Welcome to Kyros",
@@ -48,12 +49,13 @@ class GetStartedScreenState extends State<GetStartedScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: Container(
+      body: AnimatedContainer(
+        duration: const Duration(milliseconds: 500),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              theme.colorScheme.primary,
-              theme.colorScheme.secondary,
+              Color.lerp(theme.colorScheme.primary, Colors.black, _current / (_carouselItems.length - 1))!,
+              Color.lerp(theme.colorScheme.secondary, Colors.black, _current / (_carouselItems.length - 1))!,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -71,7 +73,7 @@ class GetStartedScreenState extends State<GetStartedScreen> {
                         isDarkMode
                             ? 'assets/images/logo_dark.svg'
                             : 'assets/images/logo.svg',
-                        height: 150,
+                        height: 180,
                         colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                       ),
                       const SizedBox(height: 40),
@@ -84,7 +86,7 @@ class GetStartedScreenState extends State<GetStartedScreen> {
                                 _carouselItems[index]['title']!,
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.lato(
-                                  fontSize: 32, // Increased font size for hierarchy
+                                  fontSize: 32,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
@@ -94,7 +96,7 @@ class GetStartedScreenState extends State<GetStartedScreen> {
                                 _carouselItems[index]['description']!,
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.lato(
-                                  fontSize: 18, // Increased font size for readability
+                                  fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white.withAlpha(204),
                                 ),
@@ -103,13 +105,18 @@ class GetStartedScreenState extends State<GetStartedScreen> {
                           );
                         },
                         options: CarouselOptions(
-                          height: 200, // Adjusted height for new text sizes
+                          height: 200,
                           autoPlay: true,
                           autoPlayInterval: const Duration(seconds: 5),
                           enlargeCenterPage: true,
                           viewportFraction: 0.9,
                           aspectRatio: 2.0,
                           initialPage: 0,
+                          onPageChanged: (index, reason) {
+                            setState(() {
+                              _current = index;
+                            });
+                          },
                         ),
                       ),
                     ],
@@ -118,20 +125,22 @@ class GetStartedScreenState extends State<GetStartedScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.all(24.0),
-                child: ElevatedButton(
-                  onPressed: _onGetStarted,
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 50),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                child: Center(
+                  child: ElevatedButton(
+                    onPressed: _onGetStarted,
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(200, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      backgroundColor: Colors.white,
+                      foregroundColor: theme.colorScheme.primary,
                     ),
-                    backgroundColor: Colors.white,
-                    foregroundColor: theme.colorScheme.primary,
-                  ),
-                  child: Text(
-                    'Get Started',
-                    style: GoogleFonts.lato(
-                        fontSize: 18, fontWeight: FontWeight.bold),
+                    child: Text(
+                      'Get Started',
+                      style: GoogleFonts.lato(
+                          fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               ),
