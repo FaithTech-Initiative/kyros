@@ -46,4 +46,10 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/
+    - assets/images/apple_logo.png
+    - assets/images/apple_logo_dark.png
+    - assets/images/google_logo.png
+    - assets/images/icon.png
+    - assets/images/icon_dark.png
+    - assets/images/logo.svg
+    - assets/images/logo_dark.svg
