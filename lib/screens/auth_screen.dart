@@ -290,13 +290,12 @@ class AuthScreenState extends State<AuthScreen> {
           _buildSocialButton(
             'assets/images/apple_logo.png',
             _signInWithApple,
-            isApple: true,
           ),
       ],
     );
   }
 
-  Widget _buildSocialButton(String imagePath, VoidCallback onPressed, {bool isApple = false}) {
+  Widget _buildSocialButton(String imagePath, VoidCallback onPressed) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return OutlinedButton(
       onPressed: onPressed,
@@ -305,9 +304,7 @@ class AuthScreenState extends State<AuthScreen> {
         padding: const EdgeInsets.all(16),
         side: BorderSide(color: isDarkMode ? Colors.white54 : Colors.black26),
       ),
-      child: isApple && isDarkMode
-          ? SvgPicture.asset('assets/images/apple_logo_dark.svg', height: 24.0)
-          : Image.asset(imagePath, height: 24.0),
+      child: Image.asset(imagePath, height: 24.0),
     );
   }
 }

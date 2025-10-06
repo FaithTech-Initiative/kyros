@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:kyros/screens/auth_screen.dart';
 import 'package:kyros/screens/main_screen.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -43,13 +44,16 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // You can add your app logo here
-            FlutterLogo(size: 100),
+            SvgPicture.asset(
+              isDarkMode ? 'assets/images/logo_dark.svg' : 'assets/images/logo.svg',
+              height: 100,
+            ),
             const SizedBox(height: 20),
             Text(
               'Kyros',

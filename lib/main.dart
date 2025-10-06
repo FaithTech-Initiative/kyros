@@ -70,6 +70,7 @@ class MyApp extends StatelessWidget {
 
               return MaterialApp(
                 title: 'Kyros',
+                debugShowCheckedModeBanner: false,
                 theme: ThemeData(
                   useMaterial3: true,
                   colorScheme: lightColorScheme,
