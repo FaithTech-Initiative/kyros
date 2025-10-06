@@ -278,6 +278,7 @@ class AuthScreenState extends State<AuthScreen> {
   }
 
   Widget _buildSocialButtons() {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -288,7 +289,7 @@ class AuthScreenState extends State<AuthScreen> {
         const SizedBox(width: 20),
         if (Theme.of(context).platform == TargetPlatform.iOS)
           _buildSocialButton(
-            'assets/images/apple_logo.png',
+            isDarkMode ? 'assets/images/apple_logo_dark.png' : 'assets/images/apple_logo.png',
             _signInWithApple,
           ),
       ],
