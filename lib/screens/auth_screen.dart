@@ -1,84 +1,69 @@
+
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
 
   @override
-  AuthScreenState createState() => AuthScreenState();
+  State<AuthScreen> createState() => _AuthScreenState();
 }
 
-class AuthScreenState extends State<AuthScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+class _AuthScreenState extends State<AuthScreen> {
+  final _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final _formKey = GlobalKey<FormState>();
+  var _isLogin = true;
+  var _enteredEmail = '';
+  var _enteredPassword = '';
+  var _enteredUsername = '';
 
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  
-  bool _isLogin = true;
+  void _submit() async {
+    final isValid = _formKey.currentState!.validate();
 
-  final List<String> _carouselText = [
-    "(Capture Insight.)",
-    "(Deepen Your Study)",
-    "(Build Your Personal Wiki)",
-  ];
+    if (!isValid) {
+      return;
+    }
 
-  Future<void> _signInWithEmailAndPassword() async {
+    _formKey.currentState!.save();
+
     try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
+      if (_isLogin) {
+        await _auth.signInWithEmailAndPassword(
+            email: _enteredEmail, password: _enteredPassword);
+      } else {
+        final userCredentials = await _auth.createUserWithEmailAndPassword(
+            email: _enteredEmail, password: _enteredPassword);
+        await userCredentials.user!.updateDisplayName(_enteredUsername);
+      }
+    } on FirebaseAuthException catch (error) {
       if (!mounted) return;
-      _navigateToHome(userCredential.user);
-    } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
+      ScaffoldMessenger.of(context).clearSnackBars();
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? 'Authentication failed.')));
+        SnackBar(
+          content: Text(error.message ?? 'Authentication failed.'),
+        ),
+      );
     }
   }
 
-  Future<void> _createUserWithEmailAndPassword() async {
-    try {
-      UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-      await userCredential.user?.updateDisplayName(_nameController.text);
-      if (!mounted) return;
-      _navigateToHome(userCredential.user);
-    } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.message ?? 'Sign up failed.')));
-    }
-  }
-
-  Future<void> _signInWithGoogle() async {
+  Future<void> _googleSignInHandler() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        return; // The user canceled the sign-in
+        return; // User cancelled the sign-in
       }
-
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-
-      UserCredential userCredential =
-          await _auth.signInWithCredential(credential);
-      if (!mounted) return;
-      _navigateToHome(userCredential.user);
+      await _auth.signInWithCredential(credential);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
@@ -86,7 +71,8 @@ class AuthScreenState extends State<AuthScreen> {
     }
   }
 
-  Future<void> _signInWithApple() async {
+
+  Future<void> _appleSignIn() async {
     try {
       final credential = await SignInWithApple.getAppleIDCredential(
         scopes: [
@@ -94,277 +80,355 @@ class AuthScreenState extends State<AuthScreen> {
           AppleIDAuthorizationScopes.fullName,
         ],
       );
-
-      final OAuthProvider oAuthProvider = OAuthProvider('apple.com');
-      final AuthCredential credentialWithApple = oAuthProvider.credential(
+      final oAuthProvider = OAuthProvider("apple.com");
+      final authCredential = oAuthProvider.credential(
         idToken: credential.identityToken,
         accessToken: credential.authorizationCode,
       );
-
-      UserCredential userCredential =
-          await _auth.signInWithCredential(credentialWithApple);
+      await _auth.signInWithCredential(authCredential);
+    } catch (error) {
       if (!mounted) return;
-      _navigateToHome(userCredential.user);
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Apple Sign in failed: $e')));
-    }
-  }
-
-  void _navigateToHome(User? user) {
-    if (user != null) {
-      Navigator.of(context).pushReplacementNamed(
-        '/main',
-        arguments: {'userId': user.uid},
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Apple Sign-In failed: ${error.toString()}'),
+        ),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                SvgPicture.asset(
-                  isDarkMode
-                      ? 'assets/images/logo_dark.svg'
-                      : 'assets/images/logo.svg',
-                  height: 180,
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  _isLogin ? 'Welcome Back!' : 'Create Your Account',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.lato(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.onSurface,
+      body: Stack(
+        children: [
+          Container(
+            color: const Color(0xFF008080),
+            height: MediaQuery.of(context).size.height * 0.4,
+            width: double.infinity,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Kyros',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                _buildCarousel(),
-                const SizedBox(height: 24),
-                _buildAuthCard(theme),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCarousel() {
-  return CarouselSlider(
-    options: CarouselOptions(
-      height: 40.0,
-      autoPlay: true,
-      autoPlayInterval: const Duration(seconds: 3),
-      enlargeCenterPage: true,
-      viewportFraction: 0.9,
-      aspectRatio: 2.0,
-      initialPage: 2,
-    ),
-    items: _carouselText.map((text) {
-      return Builder(
-        builder: (BuildContext context) {
-          return Container(
-            width: MediaQuery.of(context).size.width,
-            margin: const EdgeInsets.symmetric(horizontal: 5.0),
-            child: Text(
-              text,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.lato(
-                fontSize: 16,
-                fontStyle: FontStyle.italic,
-                color: Theme.of(context).colorScheme.onSurface.withAlpha(153),
+                  if (_isLogin) const AnimatedSubtitle(),
+                ],
               ),
             ),
-          );
-        },
-      );
-    }).toList(),
-  );
-}
-
-  Widget _buildAuthCard(ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(13),
-            spreadRadius: 4,
-            blurRadius: 10,
-            offset: const Offset(0, 4),
           ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              height:
+                  MediaQuery.of(context).size.height * (_isLogin ? 0.75 : 0.8),
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(30),
+                  topRight: Radius.circular(30),
+                ),
+              ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(30.0),
+                child: Form(
+                  key: _formKey,
+                  child: _isLogin ? _buildLoginForm() : _buildSignupForm(),
+                ),
+              ),
+            ),
+          ),
+          if (!_isLogin)
+            Positioned(
+              top: 40,
+              left: 10,
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () {
+                  setState(() {
+                    _isLogin = true;
+                  });
+                },
+              ),
+            ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (!_isLogin) _buildNameField(),
-          if (!_isLogin) const SizedBox(height: 16),
-          _buildEmailField(),
-          const SizedBox(height: 16),
-          _buildPasswordField(),
-          const SizedBox(height: 24),
-          _buildAuthButton(),
-          _buildToggleAuthModeButton(),
-          const SizedBox(height: 24),
-          _buildDivider(),
-          const SizedBox(height: 16),
-          _buildSocialButtons(),
-        ],
-      ),
     );
   }
 
-  Widget _buildNameField() {
-    return TextField(
-      controller: _nameController,
-      decoration: InputDecoration(
-        labelText: 'Name',
-        prefixIcon: const Icon(Icons.person),
-        border: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12.0)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: const BorderRadius.all(Radius.circular(12.0)),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2.0),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmailField() {
-    return TextField(
-      controller: _emailController,
-      decoration: InputDecoration(
-        labelText: 'Email address',
-        prefixIcon: const Icon(Icons.email),
-        border: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12.0)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: const BorderRadius.all(Radius.circular(12.0)),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2.0),
-        ),
-      ),
-      keyboardType: TextInputType.emailAddress,
-    );
-  }
-
-  Widget _buildPasswordField() {
-    return TextField(
-      controller: _passwordController,
-      decoration: InputDecoration(
-        labelText: 'Password',
-        prefixIcon: const Icon(Icons.lock),
-        border: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12.0)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: const BorderRadius.all(Radius.circular(12.0)),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2.0),
-        ),
-      ),
-      obscureText: true,
-    );
-  }
-
-  Widget _buildAuthButton() {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Theme.of(context).colorScheme.onPrimary,
-      ),
-      onPressed: _isLogin
-          ? _signInWithEmailAndPassword
-          : _createUserWithEmailAndPassword,
-      child: Text(
-        _isLogin ? 'Sign In' : 'Sign Up',
-        style: GoogleFonts.lato(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildToggleAuthModeButton() {
-    return TextButton(
-      onPressed: () {
-        setState(() {
-          _isLogin = !_isLogin;
-        });
-      },
-      child: Text(
-        _isLogin
-            ? "Don't have an account? Sign Up"
-            : "Already have an account? Sign In",
-        style: GoogleFonts.lato(color: Theme.of(context).colorScheme.primary),
-      ),
-    );
-  }
-
-  Widget _buildDivider() {
-    return Row(
+  Widget _buildLoginForm() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Expanded(child: Divider()),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-          child: Text('Or continue with',
-              style: GoogleFonts.lato(color: Colors.grey)),
+        const Text(
+          'Login',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        const Expanded(child: Divider()),
+        const SizedBox(height: 20),
+        _buildEmailField(),
+        const SizedBox(height: 15),
+        _buildPasswordField(),
+        const SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: _submit,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF008080),
+            minimumSize: const Size(double.infinity, 50),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+          ),
+          child: const Text('Login',
+              style: TextStyle(color: Colors.white, fontSize: 16)),
+        ),
+        const SizedBox(height: 20),
+        _buildDivider(),
+        const SizedBox(height: 20),
+        _buildSocialLogins(),
+        const SizedBox(height: 20),
+        _buildToggleAuthMode(),
       ],
     );
   }
 
-  Widget _buildSocialButtons() {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+  Widget _buildSignupForm() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Sign Up',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 20),
+        _buildUsernameField(),
+        const SizedBox(height: 15),
+        _buildEmailField(),
+        const SizedBox(height: 15),
+        _buildPasswordField(),
+        const SizedBox(height: 20),
+        ElevatedButton(
+          onPressed: _submit,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF008080),
+            minimumSize: const Size(double.infinity, 50),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
+          ),
+          child: const Text('Sign Up',
+              style: TextStyle(color: Colors.white, fontSize: 16)),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmailField() {
+    return TextFormField(
+      decoration: InputDecoration(
+        labelText: 'Email',
+        prefixIcon: const Icon(Icons.email_outlined),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+      ),
+      keyboardType: TextInputType.emailAddress,
+      autocorrect: false,
+      textCapitalization: TextCapitalization.none,
+      validator: (value) {
+        if (value == null || value.trim().isEmpty || !value.contains('@')) {
+          return 'Please enter a valid email address.';
+        }
+        return null;
+      },
+      onSaved: (value) {
+        _enteredEmail = value!;
+      },
+    );
+  }
+
+  Widget _buildUsernameField() {
+    return TextFormField(
+      decoration: InputDecoration(
+        labelText: 'Username',
+        prefixIcon: const Icon(Icons.person_outline),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+      ),
+      enableSuggestions: false,
+      validator: (value) {
+        if (value == null || value.trim().length < 4) {
+          return 'Please enter at least 4 characters.';
+        }
+        return null;
+      },
+      onSaved: (value) {
+        _enteredUsername = value!;
+      },
+    );
+  }
+
+  Widget _buildPasswordField() {
+    return TextFormField(
+      decoration: InputDecoration(
+        labelText: 'Password',
+        prefixIcon: const Icon(Icons.lock_outline),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+      ),
+      obscureText: true,
+      validator: (value) {
+        if (value == null || value.trim().length < 6) {
+          return 'Password must be at least 6 characters long.';
+        }
+        return null;
+      },
+      onSaved: (value) {
+        _enteredPassword = value!;
+      },
+    );
+  }
+
+  Widget _buildDivider() {
+    return const Row(
+      children: [
+        Expanded(child: Divider()),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10),
+          child: Text('Or login with', style: TextStyle(color: Colors.grey)),
+        ),
+        Expanded(child: Divider()),
+      ],
+    );
+  }
+
+  Widget _buildSocialLogins() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _buildSocialButton(
           'assets/images/google_logo.png',
-          _signInWithGoogle,
+          _googleSignInHandler,
         ),
         const SizedBox(width: 20),
         if (Theme.of(context).platform == TargetPlatform.iOS)
           _buildSocialButton(
-            isDarkMode ? 'assets/images/apple_logo_dark.png' : 'assets/images/apple_logo.png',
-            _signInWithApple,
+            'assets/images/apple_logo.png',
+            _appleSignIn,
           ),
       ],
     );
   }
 
   Widget _buildSocialButton(String imagePath, VoidCallback onPressed) {
-    return OutlinedButton(
-      onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        shape: const CircleBorder(),
-        padding: const EdgeInsets.all(16),
-        side: BorderSide(color: Theme.of(context).colorScheme.primary),
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Image.asset(imagePath, height: 30),
       ),
-      child: Image.asset(imagePath, height: 24.0),
+    );
+  }
+
+  Widget _buildToggleAuthMode() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text("Don't have an account?"),
+        TextButton(
+          onPressed: () {
+            setState(() {
+              _isLogin = false;
+            });
+          },
+          child: const Text(
+            'Sign Up',
+            style: TextStyle(
+              color: Color(0xFF008080),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class AnimatedSubtitle extends StatefulWidget {
+  const AnimatedSubtitle({super.key});
+
+  @override
+  State<AnimatedSubtitle> createState() => _AnimatedSubtitleState();
+}
+
+class _AnimatedSubtitleState extends State<AnimatedSubtitle> {
+  int _currentIndex = 0;
+  final List<String> _subtitles = [
+    "Capture Insights.",
+    "Deepen Your Study.",
+    "Build Your Personal Wiki.",
+  ];
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (mounted) {
+        setState(() {
+          _currentIndex = (_currentIndex + 1) % _subtitles.length;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 500),
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.0, 0.2),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          ),
+        );
+      },
+      child: Text(
+        _subtitles[_currentIndex],
+        key: ValueKey<int>(_currentIndex),
+        style: const TextStyle(fontSize: 18, color: Colors.white70),
+      ),
     );
   }
 }

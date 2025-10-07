@@ -22,6 +22,7 @@ This document outlines the style, design, and features of a note-taking and serm
     *   **Collections:** A personal knowledge base or index of notes.
 *   **Floating Action Button:** Provides a quick way to create a new note, navigating to the `NoteTakingPage`.
 *   **State Management:** The `provider` package is used for state management, with providers for `ThemeProvider`, `FontSizeProvider`, and `NotificationProvider`.
+*   **Routing:** The application uses named routes for navigation.
 
 ## Style and Design
 
@@ -40,6 +41,7 @@ This document outlines the style, design, and features of a note-taking and serm
 
 ### 2. Screens
 
+*   **Get Started Screen:** A beautiful landing screen with a background image and a prominent "Get Started" button that navigates the user to the authentication flow.
 *   **Home Screen:** A dashboard displaying a list of recent notes and a `FloatingActionButton` to create new ones.
 *   **Note-Taking Screen:** A dedicated page for creating and editing notes.
 *   **Bible Lookup Screen:** A placeholder for a future Bible reading and searching interface.
@@ -53,9 +55,10 @@ This document outlines the style, design, and features of a note-taking and serm
 
 ## Current Plan
 
-*   **Goal:** Add a notification preference setting.
+*   **Goal:** Build the Authentication Screen.
 *   **Steps:**
-    1.  Created a `NotificationProvider` to manage notification state.
-    2.  Added the `NotificationProvider` to the `MultiProvider` in `main.dart`.
-    3.  Added a `SwitchListTile` to the `SettingsScreen` for toggling notifications.
-    4.  Updated the blueprint to document the new notification setting.
+    1.  Create a new `auth_screen.dart` file.
+    2.  Design a UI that allows users to switch between Sign In and Sign Up.
+    3.  Include fields for email and password.
+    4.  Style the screen to be consistent with the `GetStartedScreen`.
+    5.  Add the `/auth` route to `main.dart`.

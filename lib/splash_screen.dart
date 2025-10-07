@@ -31,7 +31,7 @@ class _SplashScreenState extends State<SplashScreen> {
       } else {
         // User is signed in
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => MainScreen(userId: user.uid)),
+          MaterialPageRoute(builder: (context) => const MainScreen()),
         );
       }
     });

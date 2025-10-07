@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
@@ -6,6 +7,7 @@ import 'package:kyros/app_theme.dart';
 import 'package:kyros/firebase_options.dart';
 import 'package:kyros/screens/auth_screen.dart';
 import 'package:kyros/screens/get_started_screen.dart';
+import 'package:kyros/screens/main_screen.dart';
 import 'package:kyros/theme_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -55,9 +57,27 @@ class MyApp extends StatelessWidget {
                 theme: lightTheme,
                 darkTheme: darkTheme,
                 themeMode: themeProvider.themeMode,
-                home: const GetStartedScreen(),
+                home: StreamBuilder<User?>(
+                  stream: FirebaseAuth.instance.authStateChanges(),
+                  builder: (ctx, userSnapshot) {
+                    if (userSnapshot.connectionState == ConnectionState.waiting) {
+                      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+                    }
+                    if (userSnapshot.hasData) {
+                      return const MainScreen();
+                    }
+                    return const GetStartedScreen();
+                  },
+                ),
                 routes: {
                   '/auth': (context) => const AuthScreen(),
+                  '/home': (context) {
+                    final user = FirebaseAuth.instance.currentUser;
+                    if (user != null) {
+                      return const MainScreen();
+                    }
+                    return const AuthScreen();
+                  }
                 },
               );
             },

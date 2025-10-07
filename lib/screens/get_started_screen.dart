@@ -1,6 +1,7 @@
+
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class GetStartedScreen extends StatefulWidget {
   const GetStartedScreen({super.key});
@@ -10,6 +11,72 @@ class GetStartedScreen extends StatefulWidget {
 }
 
 class GetStartedScreenState extends State<GetStartedScreen> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+  Timer? _gradientTimer;
+  List<Color> _gradientColors = [];
+
+  final List<Map<String, String>> _slideData = [
+    {
+      "title": "Welcome to Kyros",
+      "description": "Your personal note and companion for deep and meaningful Bible study."
+    },
+    {
+      "title": "Capture Your Insights",
+      "description": "Take notes, highlight verses, and organize your thoughts seamlessly."
+    },
+    {
+      "title": "Powerful Study Tools",
+      "description": "Access commentaries, cross-references, and more to enrich your understanding."
+    },
+    {
+      "title": "Create Your Personal Wiki",
+      "description": "Build a knowledge base of your spiritual journey and discoveries."
+    },
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController.addListener(() {
+      if (mounted) {
+        setState(() {
+          _currentPage = _pageController.page?.round() ?? 0;
+        });
+      }
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final colorScheme = Theme.of(context).colorScheme;
+      final colors = [
+        colorScheme.primary,
+        colorScheme.secondary,
+        colorScheme.tertiary,
+        colorScheme.primary.withAlpha(179), // Replaced withOpacity(0.7)
+      ];
+
+      _gradientColors = [colors[0], colors[1]];
+      int colorIndex = 0;
+
+      _gradientTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+        if (mounted) {
+          setState(() {
+            colorIndex = (colorIndex + 1) % colors.length;
+            final nextColorIndex = (colorIndex + 1) % colors.length;
+            _gradientColors = [colors[colorIndex], colors[nextColorIndex]];
+          });
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _gradientTimer?.cancel();
+    super.dispose();
+  }
+
   void _onGetStarted() {
     Navigator.of(context).pushReplacementNamed('/auth');
   }
@@ -21,79 +88,123 @@ class GetStartedScreenState extends State<GetStartedScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background image
-          Positioned.fill(
-            child: SvgPicture.asset(
-              'assets/images/get_started_background.svg',
-              fit: BoxFit.cover,
-            ),
-          ),
-          // Gradient overlay
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Color(0xB3000000), // Black with 70% opacity
-                  ],
-                ),
+          AnimatedContainer(
+            duration: const Duration(seconds: 4),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: _gradientColors.isEmpty
+                    ? [theme.colorScheme.primary, theme.colorScheme.secondary]
+                    : _gradientColors,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
             ),
           ),
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Welcome to Kyros',
-                  style: GoogleFonts.poppins(
-                    fontSize: 48,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'A new way to connect with your faith community.',
-                  style: GoogleFonts.poppins(
-                    fontSize: 20,
-                    color: const Color(0xCCFFFFFF), // White with 80% opacity
-                  ),
-                ),
-                const SizedBox(height: 48),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _onGetStarted,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      backgroundColor: theme.colorScheme.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                children: [
+                  const SizedBox(height: 60),
+                  Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(77), // Replaced withOpacity(0.3)
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
                     ),
-                    child: Text(
-                      'Get Started',
-                      style: GoogleFonts.poppins(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: theme.colorScheme.onPrimary,
-                      ),
+                    child: Image.asset(
+                      'assets/images/icon.png', 
+                      height: 120,
                     ),
                   ),
-                ),
-                const SizedBox(height: 32),
-              ],
+                  const SizedBox(height: 50),
+                  Expanded(
+                    child: PageView.builder(
+                      controller: _pageController,
+                      itemCount: _slideData.length,
+                      itemBuilder: (context, index) {
+                        return Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              _slideData[index]['title']!,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.oswald(
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _slideData[index]['description']!,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.roboto(
+                                fontSize: 18,
+                                color: Colors.white.withAlpha(217), // Replaced withOpacity(0.85)
+                                height: 1.5,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  _buildPageIndicator(),
+                  const SizedBox(height: 50),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _onGetStarted,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Get Started',
+                        style: GoogleFonts.roboto(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                ],
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildPageIndicator() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(_slideData.length, (index) {
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          margin: const EdgeInsets.symmetric(horizontal: 4.0),
+          height: 8.0,
+          width: _currentPage == index ? 24.0 : 8.0,
+          decoration: BoxDecoration(
+            color: _currentPage == index
+                ? Colors.white
+                : Colors.white.withAlpha(128), // Replaced withOpacity(0.5)
+            borderRadius: BorderRadius.circular(12),
+          ),
+        );
+      }),
     );
   }
 }
