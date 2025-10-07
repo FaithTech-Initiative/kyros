@@ -1,6 +1,6 @@
-
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class GetStartedScreen extends StatefulWidget {
@@ -13,25 +13,29 @@ class GetStartedScreen extends StatefulWidget {
 class GetStartedScreenState extends State<GetStartedScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
-  Timer? _gradientTimer;
+  Timer? _animationTimer;
   List<Color> _gradientColors = [];
 
   final List<Map<String, String>> _slideData = [
     {
       "title": "Welcome to Kyros",
-      "description": "Your personal note and companion for deep and meaningful Bible study."
+      "description":
+          "Your personal note and companion for deep and meaningful Bible study."
     },
     {
       "title": "Capture Your Insights",
-      "description": "Take notes, highlight verses, and organize your thoughts seamlessly."
+      "description":
+          "Take notes, highlight verses, and organize your thoughts seamlessly."
     },
     {
       "title": "Powerful Study Tools",
-      "description": "Access commentaries, cross-references, and more to enrich your understanding."
+      "description":
+          "Access commentaries, cross-references, and more to enrich your understanding."
     },
     {
       "title": "Create Your Personal Wiki",
-      "description": "Build a knowledge base of your spiritual journey and discoveries."
+      "description":
+          "Build a knowledge base of your spiritual journey and discoveries."
     },
   ];
 
@@ -52,14 +56,23 @@ class GetStartedScreenState extends State<GetStartedScreen> {
         colorScheme.primary,
         colorScheme.secondary,
         colorScheme.tertiary,
-        colorScheme.primary.withAlpha(179), // Replaced withOpacity(0.7)
+        colorScheme.primary.withAlpha(179),
       ];
 
       _gradientColors = [colors[0], colors[1]];
       int colorIndex = 0;
 
-      _gradientTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      _animationTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
         if (mounted) {
+          // Animate PageView
+          final int nextPage = (_currentPage + 1) % _slideData.length;
+          _pageController.animateToPage(
+            nextPage,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeInOut,
+          );
+
+          // Animate Gradient
           setState(() {
             colorIndex = (colorIndex + 1) % colors.length;
             final nextColorIndex = (colorIndex + 1) % colors.length;
@@ -73,7 +86,7 @@ class GetStartedScreenState extends State<GetStartedScreen> {
   @override
   void dispose() {
     _pageController.dispose();
-    _gradientTimer?.cancel();
+    _animationTimer?.cancel();
     super.dispose();
   }
 
@@ -111,15 +124,19 @@ class GetStartedScreenState extends State<GetStartedScreen> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withAlpha(77), // Replaced withOpacity(0.3)
+                          color: Colors.black.withAlpha(77),
                           blurRadius: 20,
                           offset: const Offset(0, 10),
                         ),
                       ],
                     ),
-                    child: Image.asset(
-                      'assets/images/icon.png', 
-                      height: 120,
+                    child: SvgPicture.asset(
+                      'assets/images/logo.svg',
+                      height: 180, // Increased size by 1.5x
+                      colorFilter: const ColorFilter.mode(
+                        Colors.white,
+                        BlendMode.srcIn,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 50),
@@ -146,7 +163,7 @@ class GetStartedScreenState extends State<GetStartedScreen> {
                               textAlign: TextAlign.center,
                               style: GoogleFonts.roboto(
                                 fontSize: 18,
-                                color: Colors.white.withAlpha(217), // Replaced withOpacity(0.85)
+                                color: Colors.white.withAlpha(217),
                                 height: 1.5,
                               ),
                             ),
@@ -157,24 +174,22 @@ class GetStartedScreenState extends State<GetStartedScreen> {
                   ),
                   _buildPageIndicator(),
                   const SizedBox(height: 50),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _onGetStarted,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        backgroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
+                  ElevatedButton(
+                    onPressed: _onGetStarted,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 64),
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(
-                        'Get Started',
-                        style: GoogleFonts.roboto(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: theme.colorScheme.primary,
-                        ),
+                    ),
+                    child: Text(
+                      'Get Started',
+                      style: GoogleFonts.roboto(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.primary,
                       ),
                     ),
                   ),
@@ -200,7 +215,7 @@ class GetStartedScreenState extends State<GetStartedScreen> {
           decoration: BoxDecoration(
             color: _currentPage == index
                 ? Colors.white
-                : Colors.white.withAlpha(128), // Replaced withOpacity(0.5)
+                : Colors.white.withAlpha(128),
             borderRadius: BorderRadius.circular(12),
           ),
         );

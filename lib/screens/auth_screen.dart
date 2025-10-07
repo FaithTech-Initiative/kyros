@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -15,12 +16,20 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   final _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final _googleSignIn = GoogleSignIn();
   final _formKey = GlobalKey<FormState>();
+  final _passwordController = TextEditingController();
+
   var _isLogin = true;
   var _enteredEmail = '';
   var _enteredPassword = '';
-  var _enteredUsername = '';
+  var _enteredName = '';
+
+  @override
+  void dispose() {
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   void _submit() async {
     final isValid = _formKey.currentState!.validate();
@@ -30,6 +39,7 @@ class _AuthScreenState extends State<AuthScreen> {
     }
 
     _formKey.currentState!.save();
+    _enteredPassword = _passwordController.text;
 
     try {
       if (_isLogin) {
@@ -38,7 +48,7 @@ class _AuthScreenState extends State<AuthScreen> {
       } else {
         final userCredentials = await _auth.createUserWithEmailAndPassword(
             email: _enteredEmail, password: _enteredPassword);
-        await userCredentials.user!.updateDisplayName(_enteredUsername);
+        await userCredentials.user!.updateDisplayName(_enteredName);
       }
     } on FirebaseAuthException catch (error) {
       if (!mounted) return;
@@ -55,7 +65,6 @@ class _AuthScreenState extends State<AuthScreen> {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        // The user canceled the sign-in
         return;
       }
       final GoogleSignInAuthentication googleAuth =
@@ -107,22 +116,28 @@ class _AuthScreenState extends State<AuthScreen> {
       body: Stack(
         children: [
           Container(
-            color: const Color(0xFF008080),
             height: MediaQuery.of(context).size.height * 0.4,
             width: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFF008080),
+                  Color(0xFF004d4d),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Kyros',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 48,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  SvgPicture.asset(
+                    'assets/images/logo.svg',
+                    height: 100,
+                    colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                   ),
                   if (_isLogin) const AnimatedSubtitle(),
                 ],
@@ -133,7 +148,7 @@ class _AuthScreenState extends State<AuthScreen> {
             alignment: Alignment.bottomCenter,
             child: Container(
               height:
-                  MediaQuery.of(context).size.height * (_isLogin ? 0.75 : 0.8),
+                  MediaQuery.of(context).size.height * (_isLogin ? 0.45 : 0.60),
               width: double.infinity,
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -219,11 +234,13 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
         ),
         const SizedBox(height: 20),
-        _buildUsernameField(),
+        _buildNameField(),
         const SizedBox(height: 15),
         _buildEmailField(),
         const SizedBox(height: 15),
         _buildPasswordField(),
+        const SizedBox(height: 15),
+        _buildConfirmPasswordField(),
         const SizedBox(height: 20),
         ElevatedButton(
           onPressed: _submit,
@@ -265,10 +282,10 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 
-  Widget _buildUsernameField() {
+  Widget _buildNameField() {
     return TextFormField(
       decoration: InputDecoration(
-        labelText: 'Username',
+        labelText: 'Name',
         prefixIcon: const Icon(Icons.person_outline),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
@@ -282,13 +299,14 @@ class _AuthScreenState extends State<AuthScreen> {
         return null;
       },
       onSaved: (value) {
-        _enteredUsername = value!;
+        _enteredName = value!;
       },
     );
   }
 
   Widget _buildPasswordField() {
     return TextFormField(
+      controller: _passwordController,
       decoration: InputDecoration(
         labelText: 'Password',
         prefixIcon: const Icon(Icons.lock_outline),
@@ -305,6 +323,25 @@ class _AuthScreenState extends State<AuthScreen> {
       },
       onSaved: (value) {
         _enteredPassword = value!;
+      },
+    );
+  }
+
+    Widget _buildConfirmPasswordField() {
+    return TextFormField(
+      decoration: InputDecoration(
+        labelText: 'Confirm Password',
+        prefixIcon: const Icon(Icons.lock_outline),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+        ),
+      ),
+      obscureText: true,
+      validator: (value) {
+        if (value != _passwordController.text) {
+          return 'Passwords do not match.';
+        }
+        return null;
       },
     );
   }
