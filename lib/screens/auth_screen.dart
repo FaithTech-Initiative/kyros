@@ -51,11 +51,12 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
-  Future<void> _googleSignInHandler() async {
+  Future<void> _handleGoogleSignIn() async {
     try {
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
       if (googleUser == null) {
-        return; // User cancelled the sign-in
+        // The user canceled the sign-in
+        return;
       }
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
@@ -64,13 +65,16 @@ class _AuthScreenState extends State<AuthScreen> {
         idToken: googleAuth.idToken,
       );
       await _auth.signInWithCredential(credential);
-    } catch (e) {
+    } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Google Sign in failed: $e')));
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Google Sign-In failed: ${error.toString()}'),
+        ),
+      );
     }
   }
-
 
   Future<void> _appleSignIn() async {
     try {
@@ -324,7 +328,7 @@ class _AuthScreenState extends State<AuthScreen> {
       children: [
         _buildSocialButton(
           'assets/images/google_logo.png',
-          _googleSignInHandler,
+          _handleGoogleSignIn,
         ),
         const SizedBox(width: 20),
         if (Theme.of(context).platform == TargetPlatform.iOS)
