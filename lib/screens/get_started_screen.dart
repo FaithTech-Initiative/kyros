@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../app_theme.dart';
 
 class GetStartedScreen extends StatefulWidget {
   const GetStartedScreen({super.key});
@@ -75,10 +76,11 @@ class GetStartedScreenState extends State<GetStartedScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final baseColor = theme.colorScheme.primary;
+    final double slideFraction = _currentPage / (_slideData.length - 1);
+
     final gradientColors = [
-      Color.lerp(baseColor, Colors.black, _currentPage * 0.1)!,
-      Color.lerp(baseColor, Colors.black, (_currentPage + 1) * 0.1)!,
+      Color.lerp(primaryColor, darkBackgroundColor, slideFraction)!,
+      Color.lerp(secondaryColor, darkBackgroundColor, slideFraction)!,
     ];
 
     return Scaffold(
