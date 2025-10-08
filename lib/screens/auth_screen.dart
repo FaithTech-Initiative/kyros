@@ -110,6 +110,20 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
+  Future<void> _signInAnonymously() async {
+    try {
+      await _auth.signInAnonymously();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Guest sign-in failed: ${error.toString()}'),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -228,6 +242,8 @@ class _AuthScreenState extends State<AuthScreen> {
         _buildDivider(),
         const SizedBox(height: 20),
         _buildSocialLogins(),
+        const SizedBox(height: 20),
+        _buildGuestMode(),
         const SizedBox(height: 20),
         _buildToggleAuthMode(),
       ],
@@ -444,6 +460,21 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
         ),
       ],
+    );
+  }
+
+    Widget _buildGuestMode() {
+    return Center(
+      child: TextButton(
+        onPressed: _signInAnonymously,
+        child: Text(
+          'Continue as Guest',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
     );
   }
 }
