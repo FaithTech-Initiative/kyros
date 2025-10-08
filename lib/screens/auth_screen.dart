@@ -123,7 +123,7 @@ class _AuthScreenState extends State<AuthScreen> {
       body: Stack(
         children: [
           Container(
-            height: MediaQuery.of(context).size.height * 0.6,
+            height: MediaQuery.of(context).size.height * 0.55,
             width: double.infinity,
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -133,16 +133,17 @@ class _AuthScreenState extends State<AuthScreen> {
               ),
             ),
             child: Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: const EdgeInsets.symmetric(horizontal: 40.0),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SvgPicture.asset(
                     'assets/images/logo.svg',
-                    height: 100,
+                    height: 120,
                     colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
                   ),
+                  const SizedBox(height: 24),
                   if (_isLogin) const AnimatedSubtitle(),
                 ],
               ),
@@ -152,7 +153,7 @@ class _AuthScreenState extends State<AuthScreen> {
             alignment: Alignment.bottomCenter,
             child: Container(
               height:
-                  MediaQuery.of(context).size.height * (_isLogin ? 0.50 : 0.65),
+                  MediaQuery.of(context).size.height * (_isLogin ? 0.60 : 0.65),
               width: double.infinity,
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -160,9 +161,16 @@ class _AuthScreenState extends State<AuthScreen> {
                   topLeft: Radius.circular(30),
                   topRight: Radius.circular(30),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 20,
+                    offset: Offset(0, -5),
+                  ),
+                ]
               ),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(30.0),
+                padding: const EdgeInsets.fromLTRB(30, 40, 30, 30),
                 child: Form(
                   key: _formKey,
                   child: _isLogin ? _buildLoginForm() : _buildSignupForm(),
