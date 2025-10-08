@@ -14,7 +14,6 @@ class GetStartedScreenState extends State<GetStartedScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
   Timer? _animationTimer;
-  List<Color> _gradientColors = [];
 
   final List<Map<String, String>> _slideData = [
     {
@@ -50,36 +49,15 @@ class GetStartedScreenState extends State<GetStartedScreen> {
       }
     });
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final colorScheme = Theme.of(context).colorScheme;
-      final colors = [
-        colorScheme.primary,
-        colorScheme.secondary,
-        colorScheme.tertiary,
-        colorScheme.primary.withAlpha(179),
-      ];
-
-      _gradientColors = [colors[0], colors[1]];
-      int colorIndex = 0;
-
-      _animationTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
-        if (mounted) {
-          // Animate PageView
-          final int nextPage = (_currentPage + 1) % _slideData.length;
-          _pageController.animateToPage(
-            nextPage,
-            duration: const Duration(milliseconds: 400),
-            curve: Curves.easeInOut,
-          );
-
-          // Animate Gradient
-          setState(() {
-            colorIndex = (colorIndex + 1) % colors.length;
-            final nextColorIndex = (colorIndex + 1) % colors.length;
-            _gradientColors = [colors[colorIndex], colors[nextColorIndex]];
-          });
-        }
-      });
+    _animationTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (mounted) {
+        final int nextPage = (_currentPage + 1) % _slideData.length;
+        _pageController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+        );
+      }
     });
   }
 
@@ -97,17 +75,20 @@ class GetStartedScreenState extends State<GetStartedScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final baseColor = theme.colorScheme.primary;
+    final gradientColors = [
+      Color.lerp(baseColor, Colors.black, _currentPage * 0.1)!,
+      Color.lerp(baseColor, Colors.black, (_currentPage + 1) * 0.1)!,
+    ];
 
     return Scaffold(
       body: Stack(
         children: [
           AnimatedContainer(
-            duration: const Duration(seconds: 4),
+            duration: const Duration(seconds: 1),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: _gradientColors.isEmpty
-                    ? [theme.colorScheme.primary, theme.colorScheme.secondary]
-                    : _gradientColors,
+                colors: gradientColors,
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -119,24 +100,12 @@ class GetStartedScreenState extends State<GetStartedScreen> {
               child: Column(
                 children: [
                   const SizedBox(height: 60),
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(77),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                    child: SvgPicture.asset(
-                      'assets/images/logo.svg',
-                      height: 180, // Increased size by 1.5x
-                      colorFilter: const ColorFilter.mode(
-                        Colors.white,
-                        BlendMode.srcIn,
-                      ),
+                  SvgPicture.asset(
+                    'assets/images/logo.svg',
+                    height: 180,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white,
+                      BlendMode.srcIn,
                     ),
                   ),
                   const SizedBox(height: 50),

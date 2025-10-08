@@ -112,18 +112,22 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final baseColor = theme.colorScheme.primary;
+    final gradientColors = [
+      baseColor,
+      Color.lerp(baseColor, Colors.black, 0.4)!,
+    ];
+
     return Scaffold(
       body: Stack(
         children: [
           Container(
-            height: MediaQuery.of(context).size.height * 0.4,
+            height: MediaQuery.of(context).size.height * 0.6,
             width: double.infinity,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  Color(0xFF008080),
-                  Color(0xFF004d4d),
-                ],
+                colors: gradientColors,
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -148,7 +152,7 @@ class _AuthScreenState extends State<AuthScreen> {
             alignment: Alignment.bottomCenter,
             child: Container(
               height:
-                  MediaQuery.of(context).size.height * (_isLogin ? 0.45 : 0.60),
+                  MediaQuery.of(context).size.height * (_isLogin ? 0.50 : 0.65),
               width: double.infinity,
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -203,7 +207,7 @@ class _AuthScreenState extends State<AuthScreen> {
         ElevatedButton(
           onPressed: _submit,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF008080),
+            backgroundColor: Theme.of(context).colorScheme.primary,
             minimumSize: const Size(double.infinity, 50),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),
@@ -245,7 +249,7 @@ class _AuthScreenState extends State<AuthScreen> {
         ElevatedButton(
           onPressed: _submit,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF008080),
+            backgroundColor: Theme.of(context).colorScheme.primary,
             minimumSize: const Size(double.infinity, 50),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15),
@@ -253,6 +257,27 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
           child: const Text('Sign Up',
               style: TextStyle(color: Colors.white, fontSize: 16)),
+        ),
+        const SizedBox(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text("Already have an account?"),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _isLogin = true;
+                });
+              },
+              child: Text(
+                'Login',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -402,10 +427,10 @@ class _AuthScreenState extends State<AuthScreen> {
               _isLogin = false;
             });
           },
-          child: const Text(
+          child: Text(
             'Sign Up',
             style: TextStyle(
-              color: Color(0xFF008080),
+              color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
             ),
           ),

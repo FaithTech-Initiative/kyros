@@ -1,99 +1,66 @@
-
-import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:kyros/models/note_model.dart';
-import 'package:audioplayers/audioplayers.dart';
+import 'package:kyros/widgets/note_editor.dart';
+import 'package:uuid/uuid.dart';
 
 class NoteScreen extends StatefulWidget {
   final Note? note;
-
-  const NoteScreen({
-    super.key,
-    this.note,
-  });
+  final String? userId;
+  const NoteScreen({super.key, this.note, this.userId});
 
   @override
-  NoteScreenState createState() => NoteScreenState();
+  State<NoteScreen> createState() => _NoteScreenState();
 }
 
-class NoteScreenState extends State<NoteScreen> {
+class _NoteScreenState extends State<NoteScreen> {
   late TextEditingController _titleController;
   late TextEditingController _contentController;
   String? _imagePath;
-  String? _audioPath;
-
-  bool isRecording = false;
-  bool isPlaying = false;
-  late AudioPlayer _audioPlayer;
 
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.note?.title ?? '');
-    _contentController =
-        TextEditingController(text: widget.note?.content ?? '');
+    _titleController = TextEditingController(text: widget.note?.title);
+    _contentController = TextEditingController(text: widget.note?.content);
     _imagePath = widget.note?.imagePath;
-    _audioPath = widget.note?.audioPath;
-    _audioPlayer = AudioPlayer();
   }
 
   @override
-  void dispose() {
-    _titleController.dispose();
-    _contentController.dispose();
-    _audioPlayer.dispose();
-    super.dispose();
-  }
-
-  Future<void> _pickImage() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _imagePath = pickedFile.path;
-      });
+  void didUpdateWidget(covariant NoteScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.note != oldWidget.note) {
+      _titleController.text = widget.note?.title ?? '';
+      _contentController.text = widget.note?.content ?? '';
+      _imagePath = widget.note?.imagePath;
     }
   }
 
-  Future<void> _toggleRecording() async {
-    // TODO: Implement audio recording
-  }
-
-  Future<void> _playAudio() async {
-    if (_audioPath != null) {
-      await _audioPlayer.play(DeviceFileSource(_audioPath!));
-      setState(() => isPlaying = true);
-      _audioPlayer.onPlayerComplete.listen((event) {
-        setState(() => isPlaying = false);
-      });
-    }
-  }
-
-  Future<void> _stopAudio() async {
-    await _audioPlayer.stop();
-    setState(() => isPlaying = false);
-  }
-
-
-  void _saveNote() {
+  Future<void> _saveNote() async {
     final title = _titleController.text;
     final content = _contentController.text;
-    if (title.isNotEmpty ||
-        content.isNotEmpty ||
-        _imagePath != null ||
-        _audioPath != null) {
-      final newNote = Note(
-        id: widget.note?.id ?? DateTime.now().toString(),
+    if (title.isNotEmpty || content.isNotEmpty || _imagePath != null) {
+      final note = Note(
+        id: widget.note?.id ?? const Uuid().v4(),
         title: title,
         content: content,
-        imagePath: _imagePath,
-        audioPath: _audioPath,
         createdAt: widget.note?.createdAt ?? DateTime.now(),
+        imagePath: _imagePath,
       );
-      Navigator.pop(context, newNote);
-    } else {
-      Navigator.pop(context);
+
+      final noteData = note.toMap();
+
+      if (widget.userId != null) {
+        final noteRef = FirebaseFirestore.instance
+            .collection('users')
+            .doc(widget.userId)
+            .collection('notes')
+            .doc(note.id);
+        await noteRef.set(noteData, SetOptions(merge: true));
+      }
+      if(mounted){
+        Navigator.of(context).pop();
+      }
     }
   }
 
@@ -101,7 +68,7 @@ class NoteScreenState extends State<NoteScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.note == null ? 'New Note' : 'Edit Note'),
+        title: const Text('Sermon Notes'),
         actions: [
           IconButton(
             icon: const Icon(Icons.save),
@@ -109,61 +76,15 @@ class NoteScreenState extends State<NoteScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                hintText: 'Title',
-                border: InputBorder.none,
-              ),
-              style:
-                  const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: TextField(
-                controller: _contentController,
-                decoration: const InputDecoration(
-                  hintText: 'Note',
-                  border: InputBorder.none,
-                ),
-                maxLines: null,
-                expands: true,
-              ),
-            ),
-            if (_imagePath != null)
-              Container(
-                height: 200,
-                width: double.infinity,
-                margin: const EdgeInsets.only(bottom: 16),
-                child: Image.file(File(_imagePath!)),
-              ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.image),
-                  onPressed: _pickImage,
-                  tooltip: 'Add Image',
-                ),
-                IconButton(
-                  icon: Icon(isRecording ? Icons.stop : Icons.mic),
-                  onPressed: _toggleRecording,
-                  tooltip: isRecording ? 'Stop Recording' : 'Record Audio',
-                ),
-                if (_audioPath != null)
-                  IconButton(
-                    icon: Icon(isPlaying ? Icons.stop : Icons.play_arrow),
-                    onPressed: isPlaying ? _stopAudio : _playAudio,
-                    tooltip: isPlaying ? 'Stop' : 'Play',
-                  ),
-              ],
-            ),
-          ],
-        ),
+      body: NoteEditor(
+        titleController: _titleController,
+        contentController: _contentController,
+        imagePath: _imagePath,
+        onImagePathChanged: (path) {
+          setState(() {
+            _imagePath = path;
+          });
+        },
       ),
     );
   }

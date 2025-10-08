@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:kyros/models/note_model.dart';
 import 'package:kyros/screens/audio_screen.dart';
 import 'package:kyros/screens/image_screen.dart';
-import 'package:kyros/screens/note_taking_page.dart';
+import 'package:kyros/screens/note_screen.dart';
 import 'package:kyros/widgets/expanding_fab.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -32,7 +32,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _navigateToNotePage({Note? note}) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => NoteTakingPage(note: note, userId: widget.userId),
+        builder: (context) => NoteScreen(note: note, userId: widget.userId),
       ),
     );
   }
