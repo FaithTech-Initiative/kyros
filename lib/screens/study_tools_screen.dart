@@ -6,11 +6,8 @@ class StudyToolsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Study Tools'),
-      ),
-      body: const Center(
+    return const Scaffold(
+      body: Center(
         child: Text('Study Tools Screen - Coming Soon!'),
       ),
     );

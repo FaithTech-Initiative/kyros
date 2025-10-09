@@ -6,8 +6,10 @@ class BibleScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
-      child: Text('Bible Screen'),
+    return const Scaffold(
+      body: Center(
+        child: Text('Bible Screen - Coming Soon!'),
+      ),
     );
   }
 }
