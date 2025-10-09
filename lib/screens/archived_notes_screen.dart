@@ -6,8 +6,12 @@ class ArchivedNotesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Archived Notes')),
-      body: const Center(child: Text('Archived Notes Screen')),
+      appBar: AppBar(
+        title: const Text('Archived Notes'),
+      ),
+      body: const Center(
+        child: Text('Archived Notes Screen'),
+      ),
     );
   }
 }

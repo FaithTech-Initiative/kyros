@@ -6,8 +6,12 @@ class TrashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Trash')),
-      body: const Center(child: Text('Trash Screen')),
+      appBar: AppBar(
+        title: const Text('Trash'),
+      ),
+      body: const Center(
+        child: Text('Trash Screen'),
+      ),
     );
   }
 }

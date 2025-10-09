@@ -6,8 +6,12 @@ class HighlightedVersesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Highlighted Verses')),
-      body: const Center(child: Text('Highlighted Verses Screen')),
+      appBar: AppBar(
+        title: const Text('Highlighted Verses'),
+      ),
+      body: const Center(
+        child: Text('Highlighted Verses Screen'),
+      ),
     );
   }
 }

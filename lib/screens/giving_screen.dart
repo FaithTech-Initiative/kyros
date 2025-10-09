@@ -6,8 +6,12 @@ class GivingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Giving')),
-      body: const Center(child: Text('Giving Screen')),
+      appBar: AppBar(
+        title: const Text('Giving'),
+      ),
+      body: const Center(
+        child: Text('Giving Screen'),
+      ),
     );
   }
 }

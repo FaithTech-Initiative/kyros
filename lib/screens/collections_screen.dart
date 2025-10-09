@@ -6,8 +6,12 @@ class CollectionsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Collections')),
-      body: const Center(child: Text('Collections Screen')),
+      appBar: AppBar(
+        title: const Text('Collections'),
+      ),
+      body: const Center(
+        child: Text('Collections Screen'),
+      ),
     );
   }
 }
