@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.only(left: 0.0), // Adjust this value to bring the logo closer
                 child: SvgPicture.asset(
                   'assets/images/logo.svg',
-                  height: 40, // Increased logo size
+                  height: 48, // Increased logo size by 1.2x
                   colorFilter: ColorFilter.mode(iconColor!, BlendMode.srcIn),
                 ),
               ),
