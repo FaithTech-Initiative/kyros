@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class Note {
   final String id;
   final String title;
+  final String? subtitle;
   final String content;
   final String? imagePath;
   final String? audioPath;
@@ -13,6 +14,7 @@ class Note {
   Note({
     required this.id,
     required this.title,
+    this.subtitle,
     required this.content,
     this.imagePath,
     this.audioPath,
@@ -24,6 +26,7 @@ class Note {
     return Note(
       id: documentId,
       title: data['title'] ?? '',
+      subtitle: data['subtitle'],
       content: data['content'] ?? '',
       imagePath: data['imagePath'],
       audioPath: data['audioPath'],
@@ -37,6 +40,7 @@ class Note {
   Map<String, dynamic> toMap() {
     return {
       'title': title,
+      'subtitle': subtitle,
       'content': content,
       'imagePath': imagePath,
       'audioPath': audioPath,

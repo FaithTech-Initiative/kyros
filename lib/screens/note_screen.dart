@@ -18,6 +18,7 @@ class NoteScreen extends StatefulWidget {
 
 class _NoteScreenState extends State<NoteScreen> {
   late TextEditingController _titleController;
+  late TextEditingController _subtitleController;
   late TextEditingController _contentController;
   String? _imagePath;
   Timer? _autoSaveTimer;
@@ -27,6 +28,7 @@ class _NoteScreenState extends State<NoteScreen> {
   void initState() {
     super.initState();
     _titleController = TextEditingController(text: widget.note?.title);
+    _subtitleController = TextEditingController(text: widget.note?.subtitle);
     _contentController = TextEditingController(text: widget.note?.content);
     _imagePath = widget.note?.imagePath;
     _lastEditedAt = widget.note?.lastEditedAt;
@@ -38,6 +40,7 @@ class _NoteScreenState extends State<NoteScreen> {
     _autoSaveTimer?.cancel();
     _saveNote();
     _titleController.dispose();
+    _subtitleController.dispose();
     _contentController.dispose();
     super.dispose();
   }
@@ -50,12 +53,17 @@ class _NoteScreenState extends State<NoteScreen> {
 
   Future<void> _saveNote() async {
     final title = _titleController.text;
+    final subtitle = _subtitleController.text;
     final content = _contentController.text;
-    if (title.isNotEmpty || content.isNotEmpty || _imagePath != null) {
+    if (title.isNotEmpty ||
+        subtitle.isNotEmpty ||
+        content.isNotEmpty ||
+        _imagePath != null) {
       final now = DateTime.now();
       final note = Note(
           id: widget.note?.id ?? const Uuid().v4(),
           title: title,
+          subtitle: subtitle,
           content: content,
           createdAt: widget.note?.createdAt ?? now,
           imagePath: _imagePath,
@@ -70,9 +78,11 @@ class _NoteScreenState extends State<NoteScreen> {
             .collection('notes')
             .doc(note.id);
         await noteRef.set(noteData, SetOptions(merge: true));
-        setState(() {
-          _lastEditedAt = now;
-        });
+        if (mounted) {
+          setState(() {
+            _lastEditedAt = now;
+          });
+        }
       }
     }
   }
@@ -88,6 +98,7 @@ class _NoteScreenState extends State<NoteScreen> {
       child: Scaffold(
         body: NoteEditor(
           titleController: _titleController,
+          subtitleController: _subtitleController,
           contentController: _contentController,
           imagePath: _imagePath,
           onImagePathChanged: (path) {
