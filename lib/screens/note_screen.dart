@@ -21,6 +21,7 @@ class _NoteScreenState extends State<NoteScreen> {
   late TextEditingController _contentController;
   String? _imagePath;
   Timer? _autoSaveTimer;
+  DateTime? _lastEditedAt;
 
   @override
   void initState() {
@@ -28,6 +29,7 @@ class _NoteScreenState extends State<NoteScreen> {
     _titleController = TextEditingController(text: widget.note?.title);
     _contentController = TextEditingController(text: widget.note?.content);
     _imagePath = widget.note?.imagePath;
+    _lastEditedAt = widget.note?.lastEditedAt;
     _startAutoSave();
   }
 
@@ -50,13 +52,14 @@ class _NoteScreenState extends State<NoteScreen> {
     final title = _titleController.text;
     final content = _contentController.text;
     if (title.isNotEmpty || content.isNotEmpty || _imagePath != null) {
+      final now = DateTime.now();
       final note = Note(
-        id: widget.note?.id ?? const Uuid().v4(),
-        title: title,
-        content: content,
-        createdAt: widget.note?.createdAt ?? DateTime.now(),
-        imagePath: _imagePath,
-      );
+          id: widget.note?.id ?? const Uuid().v4(),
+          title: title,
+          content: content,
+          createdAt: widget.note?.createdAt ?? now,
+          imagePath: _imagePath,
+          lastEditedAt: now);
 
       final noteData = note.toMap();
 
@@ -67,6 +70,9 @@ class _NoteScreenState extends State<NoteScreen> {
             .collection('notes')
             .doc(note.id);
         await noteRef.set(noteData, SetOptions(merge: true));
+        setState(() {
+          _lastEditedAt = now;
+        });
       }
     }
   }
@@ -89,6 +95,7 @@ class _NoteScreenState extends State<NoteScreen> {
               _imagePath = path;
             });
           },
+          lastEditedAt: _lastEditedAt,
         ),
       ),
     );

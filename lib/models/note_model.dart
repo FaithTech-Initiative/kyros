@@ -1,3 +1,4 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Note {
@@ -7,6 +8,7 @@ class Note {
   final String? imagePath;
   final String? audioPath;
   final DateTime createdAt;
+  final DateTime? lastEditedAt;
 
   Note({
     required this.id,
@@ -15,6 +17,7 @@ class Note {
     this.imagePath,
     this.audioPath,
     required this.createdAt,
+    this.lastEditedAt,
   });
 
   factory Note.fromMap(Map<String, dynamic> data, String documentId) {
@@ -25,6 +28,9 @@ class Note {
       imagePath: data['imagePath'],
       audioPath: data['audioPath'],
       createdAt: (data['createdAt'] as Timestamp).toDate(),
+      lastEditedAt: data['lastEditedAt'] != null
+          ? (data['lastEditedAt'] as Timestamp).toDate()
+          : null,
     );
   }
 
@@ -35,6 +41,7 @@ class Note {
       'imagePath': imagePath,
       'audioPath': audioPath,
       'createdAt': createdAt,
+      'lastEditedAt': lastEditedAt,
     };
   }
 }

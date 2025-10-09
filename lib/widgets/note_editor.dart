@@ -3,12 +3,14 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 
 class NoteEditor extends StatelessWidget {
   final TextEditingController titleController;
   final TextEditingController contentController;
   final String? imagePath;
   final ValueChanged<String?> onImagePathChanged;
+  final DateTime? lastEditedAt;
 
   const NoteEditor({
     super.key,
@@ -16,6 +18,7 @@ class NoteEditor extends StatelessWidget {
     required this.contentController,
     this.imagePath,
     required this.onImagePathChanged,
+    this.lastEditedAt,
   });
 
   @override
@@ -107,7 +110,9 @@ class NoteEditor extends StatelessWidget {
                 showModalBottomSheet(
                   context: context,
                   builder: (context) {
-                    return const _MoreOptionsSheet();
+                    return _MoreOptionsSheet(
+                      lastEditedAt: lastEditedAt,
+                    );
                   },
                 );
               },
@@ -120,17 +125,21 @@ class NoteEditor extends StatelessWidget {
 }
 
 class _MoreOptionsSheet extends StatelessWidget {
-  const _MoreOptionsSheet();
+  final DateTime? lastEditedAt;
+  const _MoreOptionsSheet({this.lastEditedAt});
 
   @override
   Widget build(BuildContext context) {
+    final formattedTime = lastEditedAt != null
+        ? DateFormat.jm().format(lastEditedAt!)
+        : 'Not available';
     return Container(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Edited 9:23 AM', style: TextStyle(color: Colors.grey)),
+          Text('Edited $formattedTime', style: const TextStyle(color: Colors.grey)),
           const SizedBox(height: 16),
           ListTile(
             leading: const Icon(Icons.delete_outline),
