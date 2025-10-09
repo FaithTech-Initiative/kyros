@@ -51,11 +51,14 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
+    final appBarColor = Theme.of(context).appBarTheme.backgroundColor;
+    final iconColor = Theme.of(context).appBarTheme.foregroundColor;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: appBarColor,
         leading: IconButton(
-          icon: const Icon(Icons.menu),
+          icon: Icon(Icons.menu, color: iconColor),
           onPressed: () {
             // Handle menu action
           },
@@ -70,11 +73,12 @@ class _HomeScreenState extends State<HomeScreen> {
             : SvgPicture.asset(
                 'assets/images/logo.svg',
                 height: 30,
+                colorFilter: ColorFilter.mode(iconColor!, BlendMode.srcIn),
               ),
         centerTitle: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: Icon(Icons.search, color: iconColor),
             onPressed: _toggleSearch,
           ),
           GestureDetector(
@@ -87,8 +91,11 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
             child: CircleAvatar(
+              backgroundColor: iconColor, // Added for visibility
               backgroundImage: user.photoURL != null ? NetworkImage(user.photoURL!) : null,
-              child: user.photoURL == null ? const Icon(Icons.person) : null,
+              child: user.photoURL == null
+                  ? Icon(Icons.person, color: appBarColor)
+                  : null,
             ),
           ),
           const SizedBox(width: 16),

@@ -20,7 +20,6 @@ class AppTheme {
       appBarTheme: const AppBarTheme(
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
-        iconTheme: IconThemeData(color: Colors.white), // <--- Add this
       ),
       iconTheme: const IconThemeData(color: Colors.black),
     );
@@ -41,7 +40,6 @@ class AppTheme {
       appBarTheme: const AppBarTheme(
         backgroundColor: darkBackgroundColor,
         foregroundColor: Colors.white,
-        iconTheme: IconThemeData(color: Colors.white), // <--- Add this
       ),
       iconTheme: const IconThemeData(color: Colors.white),
     );
