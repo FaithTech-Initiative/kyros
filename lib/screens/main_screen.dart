@@ -1,7 +1,11 @@
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:kyros/screens/bible_screen.dart';
+import 'package:kyros/screens/my_wiki_screen.dart';
 import 'package:kyros/screens/note_list_screen.dart';
 import 'package:kyros/screens/profile_screen.dart';
+import 'package:kyros/screens/study_tools_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -13,6 +17,7 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   late PageController _pageController;
+  bool _isSearchActive = false;
 
   @override
   void initState() {
@@ -40,6 +45,12 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
+  void _toggleSearch() {
+    setState(() {
+      _isSearchActive = !_isSearchActive;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
@@ -54,15 +65,53 @@ class _MainScreenState extends State<MainScreen> {
 
     final pages = [
       const NoteListScreen(),
-      const ProfileScreen(),
+      const BibleScreen(),
+      const StudyToolsScreen(),
+      const MyWikiScreen(),
     ];
-
-    final pageTitles = ['Kyros', 'Profile'];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(pageTitles[_currentIndex]),
-        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () {
+            // Handle menu action
+          },
+        ),
+        title: _isSearchActive
+            ? const TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search...',
+                  border: InputBorder.none,
+                ),
+              )
+            : const Text('Logo'), // Placeholder for your logo
+        // align the title to the left
+        centerTitle: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: _toggleSearch,
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProfileScreen(),
+                ),
+              );
+            },
+            child: CircleAvatar(
+              backgroundImage:
+                  user.photoURL != null ? NetworkImage(user.photoURL!) : null,
+              child: user.photoURL == null
+                  ? const Icon(Icons.person)
+                  : null,
+            ),
+          ),
+          const SizedBox(width: 16),
+        ],
         elevation: 0,
       ),
       body: PageView(
@@ -80,9 +129,19 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profile',
+            icon: Icon(Icons.book_outlined),
+            activeIcon: Icon(Icons.book),
+            label: 'Bible',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.build_outlined),
+            activeIcon: Icon(Icons.build),
+            label: 'Study Tools',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.history_edu_outlined),
+            activeIcon: Icon(Icons.history_edu),
+            label: 'My Wiki',
           ),
         ],
       ),
