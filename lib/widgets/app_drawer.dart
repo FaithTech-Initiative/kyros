@@ -6,7 +6,6 @@ import 'package:kyros/screens/collections_screen.dart';
 import 'package:kyros/screens/giving_screen.dart';
 import 'package:kyros/screens/help_and_feedback_screen.dart';
 import 'package:kyros/screens/highlighted_verses_screen.dart';
-import 'package:kyros/screens/profile_screen.dart';
 import 'package:kyros/screens/settings_screen.dart';
 import 'package:kyros/screens/trash_screen.dart';
 
@@ -30,22 +29,10 @@ class AppDrawer extends StatelessWidget {
             accountName: Text(user?.displayName ?? 'Anonymous'),
             accountEmail: Text(user?.email ?? ''),
             currentAccountPicture: CircleAvatar(
-              backgroundImage: user?.photoURL != null ? NetworkImage(user!.photoURL!) : null,
+              backgroundImage:
+                  user?.photoURL != null ? NetworkImage(user!.photoURL!) : null,
               child: user?.photoURL == null ? const Icon(Icons.person) : null,
             ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.person),
-            title: const Text('Profile'),
-            onTap: () {
-              Navigator.pop(context); // Close the drawer
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ProfileScreen(),
-                ),
-              );
-            },
           ),
           ListTile(
             leading: const Icon(Icons.collections_bookmark),
@@ -88,6 +75,7 @@ class AppDrawer extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => const TrashScreen()));
             },
           ),
+          const Divider(),
           ListTile(
             leading: const Icon(Icons.info),
             title: const Text('About'),
@@ -100,8 +88,10 @@ class AppDrawer extends StatelessWidget {
             leading: const Icon(Icons.volunteer_activism),
             title: const Text('Giving'),
             onTap: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const GivingScreen()));
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const GivingScreen()));
             },
           ),
           ListTile(

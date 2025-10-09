@@ -67,7 +67,7 @@ class _MainScreenState extends State<MainScreen> {
           currentIndex: _currentIndex,
           onTap: _onTabTapped,
           selectedItemColor: iconColor,
-          unselectedItemColor: iconColor?.withOpacity(0.6),
+          unselectedItemColor: Colors.grey,
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),

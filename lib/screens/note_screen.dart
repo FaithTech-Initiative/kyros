@@ -1,3 +1,6 @@
+
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:kyros/models/note_model.dart';
@@ -17,6 +20,7 @@ class _NoteScreenState extends State<NoteScreen> {
   late TextEditingController _titleController;
   late TextEditingController _contentController;
   String? _imagePath;
+  Timer? _autoSaveTimer;
 
   @override
   void initState() {
@@ -24,16 +28,22 @@ class _NoteScreenState extends State<NoteScreen> {
     _titleController = TextEditingController(text: widget.note?.title);
     _contentController = TextEditingController(text: widget.note?.content);
     _imagePath = widget.note?.imagePath;
+    _startAutoSave();
   }
 
   @override
-  void didUpdateWidget(covariant NoteScreen oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.note != oldWidget.note) {
-      _titleController.text = widget.note?.title ?? '';
-      _contentController.text = widget.note?.content ?? '';
-      _imagePath = widget.note?.imagePath;
-    }
+  void dispose() {
+    _autoSaveTimer?.cancel();
+    _saveNote();
+    _titleController.dispose();
+    _contentController.dispose();
+    super.dispose();
+  }
+
+  void _startAutoSave() {
+    _autoSaveTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      _saveNote();
+    });
   }
 
   Future<void> _saveNote() async {
@@ -58,33 +68,28 @@ class _NoteScreenState extends State<NoteScreen> {
             .doc(note.id);
         await noteRef.set(noteData, SetOptions(merge: true));
       }
-      if(mounted){
-        Navigator.of(context).pop();
-      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sermon Notes'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _saveNote,
-          ),
-        ],
-      ),
-      body: NoteEditor(
-        titleController: _titleController,
-        contentController: _contentController,
-        imagePath: _imagePath,
-        onImagePathChanged: (path) {
-          setState(() {
-            _imagePath = path;
-          });
-        },
+    return PopScope(
+      onPopInvoked: (didPop) {
+        if (didPop) {
+          _saveNote();
+        }
+      },
+      child: Scaffold(
+        body: NoteEditor(
+          titleController: _titleController,
+          contentController: _contentController,
+          imagePath: _imagePath,
+          onImagePathChanged: (path) {
+            setState(() {
+              _imagePath = path;
+            });
+          },
+        ),
       ),
     );
   }
