@@ -50,6 +50,8 @@ class _MainScreenState extends State<MainScreen> {
       const MyWikiScreen(),
     ];
 
+    final iconColor = Theme.of(context).iconTheme.color;
+
     return Theme(
       data: Theme.of(context).copyWith(
         canvasColor: Theme.of(context).bottomAppBarTheme.color,
@@ -64,6 +66,8 @@ class _MainScreenState extends State<MainScreen> {
           type: BottomNavigationBarType.fixed,
           currentIndex: _currentIndex,
           onTap: _onTabTapped,
+          selectedItemColor: iconColor,
+          unselectedItemColor: iconColor?.withOpacity(0.6),
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),

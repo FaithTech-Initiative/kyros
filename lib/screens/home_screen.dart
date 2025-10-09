@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kyros/models/note_model.dart';
 import 'package:kyros/screens/audio_screen.dart';
 import 'package:kyros/screens/image_screen.dart';
@@ -66,7 +67,10 @@ class _HomeScreenState extends State<HomeScreen> {
                   border: InputBorder.none,
                 ),
               )
-            : const Text('Logo'), // Placeholder for your logo
+            : SvgPicture.asset(
+                'assets/images/logo.svg',
+                height: 30,
+              ),
         centerTitle: false,
         actions: [
           IconButton(
