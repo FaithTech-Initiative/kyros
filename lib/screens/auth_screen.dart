@@ -3,6 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:kyros/screens/auth/widgets/auth_mode_toggle.dart';
+import 'package:kyros/screens/auth/widgets/email_password_form.dart';
+import 'package:kyros/screens/auth/widgets/guest_mode_button.dart';
+import 'package:kyros/screens/auth/widgets/social_login_buttons.dart';
 import 'package:kyros/services/auth_service.dart';
 import 'package:kyros/utils/snackbar_helper.dart';
 
@@ -215,196 +219,46 @@ class _AuthScreenState extends State<AuthScreen> {
             ]),
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(30, 40, 30, 30),
-          child: Form(
-            key: _formKey,
-            child: _isLogin ? _buildLoginForm() : _buildSignupForm(),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildLoginForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Login',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 20),
-        _buildEmailField(),
-        const SizedBox(height: 15),
-        _buildPasswordField(),
-        const SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: _isLoading ? null : _submit,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            minimumSize: const Size(double.infinity, 50),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-          ),
-          child: _isLoading 
-              ? const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
-              : const Text('Login', style: TextStyle(color: Colors.white, fontSize: 16)),
-        ),
-        const SizedBox(height: 20),
-        _buildDivider(),
-        const SizedBox(height: 20),
-        _buildSocialLogins(),
-        const SizedBox(height: 20),
-        _buildGuestMode(),
-        const SizedBox(height: 20),
-        _buildToggleAuthMode(),
-      ],
-    );
-  }
-
-  Widget _buildSignupForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Sign Up',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 20),
-        _buildNameField(),
-        const SizedBox(height: 15),
-        _buildEmailField(),
-        const SizedBox(height: 15),
-        _buildPasswordField(),
-        const SizedBox(height: 15),
-        _buildConfirmPasswordField(),
-        const SizedBox(height: 20),
-        ElevatedButton(
-          onPressed: _isLoading ? null : _submit,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            minimumSize: const Size(double.infinity, 50),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-          ),
-          child: _isLoading
-              ? const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
-              : const Text('Sign Up', style: TextStyle(color: Colors.white, fontSize: 16)),
-        ),
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text("Already have an account?"),
-            TextButton(
-              onPressed: _isLoading ? null : () => _setAuthMode(true),
-              child: Text(
-                'Login',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.bold,
-                ),
+          child: Column(
+            children: [
+              EmailPasswordForm(
+                formKey: _formKey,
+                passwordController: _passwordController,
+                isLogin: _isLogin,
+                isLoading: _isLoading,
+                onEmailSaved: (value) => _enteredEmail = value,
+                onNameSaved: (value) => _enteredName = value,
+                onSubmit: _submit,
               ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildEmailField() {
-    return TextFormField(
-      decoration: InputDecoration(
-        labelText: 'Email',
-        prefixIcon: const Icon(Icons.email_outlined),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-      ),
-      keyboardType: TextInputType.emailAddress,
-      autocorrect: false,
-      textCapitalization: TextCapitalization.none,
-      validator: (value) {
-        if (value == null || value.trim().isEmpty || !value.contains('@')) {
-          return 'Please enter a valid email address.';
-        }
-        return null;
-      },
-      onSaved: (value) {
-        _enteredEmail = value!;
-      },
-    );
-  }
-
-  Widget _buildNameField() {
-    return TextFormField(
-      decoration: InputDecoration(
-        labelText: 'Name',
-        prefixIcon: const Icon(Icons.person_outline),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
+              const SizedBox(height: 20),
+              if (_isLogin) ...[
+                _buildDivider(),
+                const SizedBox(height: 20),
+                SocialLoginButtons(
+                  isLoading: _isLoading,
+                  onGoogleSignIn: _handleGoogleSignIn,
+                  onAppleSignIn: _appleSignIn,
+                ),
+                const SizedBox(height: 20),
+                GuestModeButton(
+                  isLoading: _isLoading,
+                  onSignInAnonymously: _signInAnonymously,
+                ),
+                const SizedBox(height: 20),
+              ],
+              AuthModeToggle(
+                isLogin: _isLogin,
+                isLoading: _isLoading,
+                setAuthMode: _setAuthMode,
+              ),
+            ],
+          ),
         ),
       ),
-      enableSuggestions: false,
-      validator: (value) {
-        if (value == null || value.trim().length < 4) {
-          return 'Please enter at least 4 characters.';
-        }
-        return null;
-      },
-      onSaved: (value) {
-        _enteredName = value!;
-      },
     );
   }
 
-  Widget _buildPasswordField() {
-    return TextFormField(
-      controller: _passwordController,
-      decoration: InputDecoration(
-        labelText: 'Password',
-        prefixIcon: const Icon(Icons.lock_outline),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-      ),
-      obscureText: true,
-      validator: (value) {
-        if (value == null || value.trim().length < 6) {
-          return 'Password must be at least 6 characters long.';
-        }
-        return null;
-      },
-    );
-  }
-
-    Widget _buildConfirmPasswordField() {
-    return TextFormField(
-      decoration: InputDecoration(
-        labelText: 'Confirm Password',
-        prefixIcon: const Icon(Icons.lock_outline),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
-      ),
-      obscureText: true,
-      validator: (value) {
-        if (value != _passwordController.text) {
-          return 'Passwords do not match.';
-        }
-        return null;
-      },
-    );
-  }
-
-  Widget _buildDivider() {
+    Widget _buildDivider() {
     return const Row(
       children: [
         Expanded(child: Divider()),
@@ -414,72 +268,6 @@ class _AuthScreenState extends State<AuthScreen> {
         ),
         Expanded(child: Divider()),
       ],
-    );
-  }
-
-  Widget _buildSocialLogins() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildSocialButton(
-          'assets/images/google_logo.png',
-          _isLoading ? () {} : _handleGoogleSignIn,
-        ),
-        const SizedBox(width: 20),
-        if (Theme.of(context).platform == TargetPlatform.iOS)
-          _buildSocialButton(
-            'assets/images/apple_logo.png',
-            _isLoading ? () {} : _appleSignIn,
-          ),
-      ],
-    );
-  }
-
-  Widget _buildSocialButton(String imagePath, VoidCallback onPressed) {
-    return GestureDetector(
-      onTap: onPressed,
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.grey.shade300),
-        ),
-        child: Image.asset(imagePath, height: 30),
-      ),
-    );
-  }
-
-  Widget _buildToggleAuthMode() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Text("Don't have an account?"),
-        TextButton(
-          onPressed: _isLoading ? null : () => _setAuthMode(false),
-          child: Text(
-            'Sign Up',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-    Widget _buildGuestMode() {
-    return Center(
-      child: TextButton(
-        onPressed: _isLoading ? null : _signInAnonymously,
-        child: Text(
-          'Continue as Guest',
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.primary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
     );
   }
 }

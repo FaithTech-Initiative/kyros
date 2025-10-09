@@ -1,4 +1,3 @@
-
 # Project Blueprint
 
 ## Overview
@@ -21,7 +20,7 @@ This document outlines the style, design, and features of a note-taking and serm
     *   **Study Tools:** A collection of tools to aid in study.
     *   **Collections:** A personal knowledge base or index of notes.
 *   **Floating Action Button:** Provides a quick way to create a new note, navigating to the `NoteTakingPage`.
-*   **State Management:** The `provider` package is used for state management, with providers for `ThemeProvider`, `FontSizeProvider`, and `NotificationProvider`.
+*   **State Management:** The `provider` package is used for state management, with providers for `ThemeProvider` and `NotesService`.
 *   **Routing:** The application uses named routes for navigation.
 *   **Authentication Service:** An `AuthService` class (`lib/services/auth_service.dart`) encapsulates all authentication logic, including email/password, Google, and Apple sign-in.
 *   **Utilities:** A `lib/utils` directory contains helper functions, such as `snackbar_helper.dart` for showing consistent `SnackBar` messages.
@@ -44,8 +43,12 @@ This document outlines the style, design, and features of a note-taking and serm
 ### 2. Screens
 
 *   **Get Started Screen:** A beautiful landing screen with a background image and a prominent "Get Started" button that navigates the user to the authentication flow.
-*   **Authentication Screen:** A screen that allows users to sign in or sign up using email/password, Google, or Apple. It also includes a "Continue as Guest" option. It features robust error handling, provides loading indicators during asynchronous operations, and gives clear user feedback via SnackBars.
-*   **Home Screen:** A dashboard displaying a list of recent notes and a `FloatingActionButton` to create new ones.
+*   **Authentication Screen:** A screen that allows users to sign in or sign up using email/password, Google, or Apple. It also includes a "Continue as Guest" option. It features robust error handling, provides loading indicators during asynchronous operations, and gives clear user feedback via SnackBars. The screen is composed of the following widgets:
+    *   `EmailPasswordForm`: A widget that encapsulates the form for both login and sign-up.
+    *   `SocialLoginButtons`: A widget that contains the buttons for signing in with Google and Apple.
+    *   `GuestModeButton`: A widget that contains the "Continue as Guest" button.
+    *   `AuthModeToggle`: A widget that allows the user to switch between the login and sign-up forms.
+*   **Home Screen:** A functional screen that displays a list of notes, a search bar to filter them, and a `FloatingActionButton` to create new notes.
 *   **Note-Taking Screen:** A dedicated page for creating and editing notes.
 *   **Bible Lookup Screen:** A placeholder for a future Bible reading and searching interface.
 *   **Study Tools Screen:** A placeholder for future study tools.
@@ -58,9 +61,13 @@ This document outlines the style, design, and features of a note-taking and serm
 
 ## Current Plan
 
-*   **Goal:** Improve Code Quality and Idiomatic Dart/Flutter in `AuthScreen`
+*   **Goal:** Refactor `AuthScreen` into smaller widgets.
 *   **Status:** **Completed**
 *   **Steps:**
-    1.  Removed the redundant `onSaved` callback for the password field and used the `_passwordController` directly.
-    2.  Created a `_setAuthMode` method to handle toggling between login and sign-up, reducing code duplication.
-    3.  Applied other minor fixes to make the code more robust and idiomatic.
+    1.  Created a `lib/screens/auth/widgets` directory.
+    2.  Created `email_password_form.dart` to handle the email/password form.
+    3.  Created `social_login_buttons.dart` for Google and Apple sign-in buttons.
+    4.  Created `guest_mode_button.dart` for the "Continue as Guest" option.
+    5.  Created `auth_mode_toggle.dart` to switch between login and sign-up.
+    6.  Updated `auth_screen.dart` to use the new widgets.
+    7.  Ran `flutter analyze` to ensure no issues were introduced.
