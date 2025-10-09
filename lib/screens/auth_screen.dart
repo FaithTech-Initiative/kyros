@@ -1,11 +1,10 @@
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:kyros/services/auth_service.dart';
+import 'package:kyros/utils/snackbar_helper.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -15,12 +14,12 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
-  final _auth = FirebaseAuth.instance;
-  final _googleSignIn = GoogleSignIn();
+  final _authService = AuthService();
   final _formKey = GlobalKey<FormState>();
   final _passwordController = TextEditingController();
 
   var _isLogin = true;
+  var _isLoading = false;
   var _enteredEmail = '';
   var _enteredPassword = '';
   var _enteredName = '';
@@ -34,98 +33,130 @@ class _AuthScreenState extends State<AuthScreen> {
   void _submit() async {
     final isValid = _formKey.currentState!.validate();
 
-    if (!isValid) {
+    if (!isValid || _isLoading) {
       return;
     }
 
     _formKey.currentState!.save();
     _enteredPassword = _passwordController.text;
 
+    setState(() {
+      _isLoading = true;
+    });
+
     try {
       if (_isLogin) {
-        await _auth.signInWithEmailAndPassword(
-            email: _enteredEmail, password: _enteredPassword);
+        await _authService.signInWithEmailAndPassword(
+            _enteredEmail, _enteredPassword);
       } else {
-        final userCredentials = await _auth.createUserWithEmailAndPassword(
-            email: _enteredEmail, password: _enteredPassword);
-        await userCredentials.user!.updateDisplayName(_enteredName);
+        await _authService.createUserWithEmailAndPassword(
+            _enteredEmail, _enteredPassword, _enteredName);
       }
     } on FirebaseAuthException catch (error) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error.message ?? 'Authentication failed.'),
-        ),
-      );
+      if (mounted) {
+        showSnackBar(context, error.message ?? 'Authentication failed.', isError: true);
+      }
+    } catch (error) {
+      if (mounted) {
+        showSnackBar(context, 'An unexpected error occurred.', isError: true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   Future<void> _handleGoogleSignIn() async {
+    if (_isLoading) return;
+    setState(() {
+      _isLoading = true;
+    });
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        return;
-      }
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-      await _auth.signInWithCredential(credential);
+      await _authService.signInWithGoogle();
     } catch (error) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Google Sign-In failed: ${error.toString()}'),
-        ),
-      );
+      if (mounted) {
+        showSnackBar(context, 'Google Sign-In failed: ${error.toString()}', isError: true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   Future<void> _appleSignIn() async {
+    if (_isLoading) return;
+    setState(() {
+      _isLoading = true;
+    });
     try {
-      final credential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-      );
-      final oAuthProvider = OAuthProvider("apple.com");
-      final authCredential = oAuthProvider.credential(
-        idToken: credential.identityToken,
-        accessToken: credential.authorizationCode,
-      );
-      await _auth.signInWithCredential(authCredential);
+      await _authService.signInWithApple();
     } catch (error) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Apple Sign-In failed: ${error.toString()}'),
-        ),
-      );
+      if (mounted) {
+        showSnackBar(context, 'Apple Sign-In failed: ${error.toString()}', isError: true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   Future<void> _signInAnonymously() async {
+    if (_isLoading) return;
+    setState(() {
+      _isLoading = true;
+    });
     try {
-      await _auth.signInAnonymously();
+      await _authService.signInAnonymously();
     } catch (error) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).clearSnackBars();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Guest sign-in failed: ${error.toString()}'),
-        ),
-      );
+      if (mounted) {
+        showSnackBar(context, 'Guest sign-in failed: ${error.toString()}', isError: true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
+  }
+
+  void _setAuthMode(bool isLogin) {
+    setState(() {
+      _isLogin = isLogin;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          _buildTopGradient(context),
+          _buildAuthForm(context),
+          if (!_isLogin)
+            Positioned(
+              top: 40,
+              left: 10,
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => _setAuthMode(true),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTopGradient(BuildContext context) {
     final theme = Theme.of(context);
     final baseColor = theme.colorScheme.primary;
     final gradientColors = [
@@ -133,79 +164,62 @@ class _AuthScreenState extends State<AuthScreen> {
       Color.lerp(baseColor, Colors.black, 0.4)!,
     ];
 
-    return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            height: MediaQuery.of(context).size.height * 0.55,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: gradientColors,
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.55,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: gradientColors,
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SvgPicture.asset(
+              'assets/images/logo.svg',
+              height: 120,
+              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
             ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 40.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SvgPicture.asset(
-                    'assets/images/logo.svg',
-                    height: 120,
-                    colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-                  ),
-                  const SizedBox(height: 24),
-                  if (_isLogin) const AnimatedSubtitle(),
-                ],
-              ),
+            const SizedBox(height: 24),
+            if (_isLogin) const AnimatedSubtitle(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAuthForm(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        height:
+            MediaQuery.of(context).size.height * (_isLogin ? 0.60 : 0.65),
+        width: double.infinity,
+        decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(30),
+              topRight: Radius.circular(30),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 20,
+                offset: Offset(0, -5),
+              ),
+            ]),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(30, 40, 30, 30),
+          child: Form(
+            key: _formKey,
+            child: _isLogin ? _buildLoginForm() : _buildSignupForm(),
           ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              height:
-                  MediaQuery.of(context).size.height * (_isLogin ? 0.60 : 0.65),
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(30),
-                  topRight: Radius.circular(30),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black26,
-                    blurRadius: 20,
-                    offset: Offset(0, -5),
-                  ),
-                ]
-              ),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(30, 40, 30, 30),
-                child: Form(
-                  key: _formKey,
-                  child: _isLogin ? _buildLoginForm() : _buildSignupForm(),
-                ),
-              ),
-            ),
-          ),
-          if (!_isLogin)
-            Positioned(
-              top: 40,
-              left: 10,
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () {
-                  setState(() {
-                    _isLogin = true;
-                  });
-                },
-              ),
-            ),
-        ],
+        ),
       ),
     );
   }
@@ -227,7 +241,7 @@ class _AuthScreenState extends State<AuthScreen> {
         _buildPasswordField(),
         const SizedBox(height: 20),
         ElevatedButton(
-          onPressed: _submit,
+          onPressed: _isLoading ? null : _submit,
           style: ElevatedButton.styleFrom(
             backgroundColor: Theme.of(context).colorScheme.primary,
             minimumSize: const Size(double.infinity, 50),
@@ -235,8 +249,9 @@ class _AuthScreenState extends State<AuthScreen> {
               borderRadius: BorderRadius.circular(15),
             ),
           ),
-          child: const Text('Login',
-              style: TextStyle(color: Colors.white, fontSize: 16)),
+          child: _isLoading 
+              ? const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
+              : const Text('Login', style: TextStyle(color: Colors.white, fontSize: 16)),
         ),
         const SizedBox(height: 20),
         _buildDivider(),
@@ -271,7 +286,7 @@ class _AuthScreenState extends State<AuthScreen> {
         _buildConfirmPasswordField(),
         const SizedBox(height: 20),
         ElevatedButton(
-          onPressed: _submit,
+          onPressed: _isLoading ? null : _submit,
           style: ElevatedButton.styleFrom(
             backgroundColor: Theme.of(context).colorScheme.primary,
             minimumSize: const Size(double.infinity, 50),
@@ -279,8 +294,9 @@ class _AuthScreenState extends State<AuthScreen> {
               borderRadius: BorderRadius.circular(15),
             ),
           ),
-          child: const Text('Sign Up',
-              style: TextStyle(color: Colors.white, fontSize: 16)),
+          child: _isLoading
+              ? const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
+              : const Text('Sign Up', style: TextStyle(color: Colors.white, fontSize: 16)),
         ),
         const SizedBox(height: 20),
         Row(
@@ -288,11 +304,7 @@ class _AuthScreenState extends State<AuthScreen> {
           children: [
             const Text("Already have an account?"),
             TextButton(
-              onPressed: () {
-                setState(() {
-                  _isLogin = true;
-                });
-              },
+              onPressed: _isLoading ? null : () => _setAuthMode(true),
               child: Text(
                 'Login',
                 style: TextStyle(
@@ -370,9 +382,6 @@ class _AuthScreenState extends State<AuthScreen> {
         }
         return null;
       },
-      onSaved: (value) {
-        _enteredPassword = value!;
-      },
     );
   }
 
@@ -414,13 +423,13 @@ class _AuthScreenState extends State<AuthScreen> {
       children: [
         _buildSocialButton(
           'assets/images/google_logo.png',
-          _handleGoogleSignIn,
+          _isLoading ? () {} : _handleGoogleSignIn,
         ),
         const SizedBox(width: 20),
         if (Theme.of(context).platform == TargetPlatform.iOS)
           _buildSocialButton(
             'assets/images/apple_logo.png',
-            _appleSignIn,
+            _isLoading ? () {} : _appleSignIn,
           ),
       ],
     );
@@ -446,11 +455,7 @@ class _AuthScreenState extends State<AuthScreen> {
       children: [
         const Text("Don't have an account?"),
         TextButton(
-          onPressed: () {
-            setState(() {
-              _isLogin = false;
-            });
-          },
+          onPressed: _isLoading ? null : () => _setAuthMode(false),
           child: Text(
             'Sign Up',
             style: TextStyle(
@@ -466,7 +471,7 @@ class _AuthScreenState extends State<AuthScreen> {
     Widget _buildGuestMode() {
     return Center(
       child: TextButton(
-        onPressed: _signInAnonymously,
+        onPressed: _isLoading ? null : _signInAnonymously,
         child: Text(
           'Continue as Guest',
           style: TextStyle(

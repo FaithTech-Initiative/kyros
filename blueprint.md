@@ -23,6 +23,8 @@ This document outlines the style, design, and features of a note-taking and serm
 *   **Floating Action Button:** Provides a quick way to create a new note, navigating to the `NoteTakingPage`.
 *   **State Management:** The `provider` package is used for state management, with providers for `ThemeProvider`, `FontSizeProvider`, and `NotificationProvider`.
 *   **Routing:** The application uses named routes for navigation.
+*   **Authentication Service:** An `AuthService` class (`lib/services/auth_service.dart`) encapsulates all authentication logic, including email/password, Google, and Apple sign-in.
+*   **Utilities:** A `lib/utils` directory contains helper functions, such as `snackbar_helper.dart` for showing consistent `SnackBar` messages.
 
 ## Style and Design
 
@@ -42,6 +44,7 @@ This document outlines the style, design, and features of a note-taking and serm
 ### 2. Screens
 
 *   **Get Started Screen:** A beautiful landing screen with a background image and a prominent "Get Started" button that navigates the user to the authentication flow.
+*   **Authentication Screen:** A screen that allows users to sign in or sign up using email/password, Google, or Apple. It also includes a "Continue as Guest" option. It features robust error handling, provides loading indicators during asynchronous operations, and gives clear user feedback via SnackBars.
 *   **Home Screen:** A dashboard displaying a list of recent notes and a `FloatingActionButton` to create new ones.
 *   **Note-Taking Screen:** A dedicated page for creating and editing notes.
 *   **Bible Lookup Screen:** A placeholder for a future Bible reading and searching interface.
@@ -55,10 +58,9 @@ This document outlines the style, design, and features of a note-taking and serm
 
 ## Current Plan
 
-*   **Goal:** Build the Authentication Screen.
+*   **Goal:** Improve Code Quality and Idiomatic Dart/Flutter in `AuthScreen`
+*   **Status:** **Completed**
 *   **Steps:**
-    1.  Create a new `auth_screen.dart` file.
-    2.  Design a UI that allows users to switch between Sign In and Sign Up.
-    3.  Include fields for email and password.
-    4.  Style the screen to be consistent with the `GetStartedScreen`.
-    5.  Add the `/auth` route to `main.dart`.
+    1.  Removed the redundant `onSaved` callback for the password field and used the `_passwordController` directly.
+    2.  Created a `_setAuthMode` method to handle toggling between login and sign-up, reducing code duplication.
+    3.  Applied other minor fixes to make the code more robust and idiomatic.

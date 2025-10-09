@@ -8,6 +8,7 @@ import 'package:kyros/firebase_options.dart';
 import 'package:kyros/screens/auth_screen.dart';
 import 'package:kyros/screens/get_started_screen.dart';
 import 'package:kyros/screens/main_screen.dart';
+import 'package:kyros/services/notes_service.dart';
 import 'package:kyros/theme_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -28,8 +29,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => ThemeProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => ThemeProvider()),
+        ChangeNotifierProvider(create: (context) => NotesService()),
+      ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return DynamicColorBuilder(

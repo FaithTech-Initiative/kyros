@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:kyros/services/auth_service.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -10,6 +11,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final user = FirebaseAuth.instance.currentUser;
+  final _authService = AuthService();
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +40,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Center(
               child: ElevatedButton.icon(
                 onPressed: () {
-                  FirebaseAuth.instance.signOut();
+                  _authService.signOut();
                 },
                 icon: const Icon(Icons.logout),
                 label: const Text('Sign Out'),
