@@ -1,3 +1,4 @@
+
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -83,7 +84,8 @@ class NoteEditor extends StatelessWidget {
                   icon: const Icon(Icons.add_box_outlined),
                   onPressed: () async {
                     final picker = ImagePicker();
-                    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+                    final pickedFile =
+                        await picker.pickImage(source: ImageSource.gallery);
                     if (pickedFile != null) {
                       onImagePathChanged(pickedFile.path);
                     }
@@ -101,10 +103,78 @@ class NoteEditor extends StatelessWidget {
             ),
             IconButton(
               icon: const Icon(Icons.more_vert),
-              onPressed: () {},
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) {
+                    return const _MoreOptionsSheet();
+                  },
+                );
+              },
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _MoreOptionsSheet extends StatelessWidget {
+  const _MoreOptionsSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Edited 9:23 AM', style: TextStyle(color: Colors.grey)),
+          const SizedBox(height: 16),
+          ListTile(
+            leading: const Icon(Icons.delete_outline),
+            title: const Text('Delete'),
+            onTap: () {
+              // TODO: Implement Delete
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.content_copy),
+            title: const Text('Make a copy'),
+            onTap: () {
+              // TODO: Implement Make a copy
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.share_outlined),
+            title: const Text('Send'),
+            onTap: () {
+              // TODO: Implement Send
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.person_add_outlined),
+            title: const Text('Collaborator'),
+            onTap: () {
+              // TODO: Implement Collaborator
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.label_outline),
+            title: const Text('Labels'),
+            onTap: () {
+              // TODO: Implement Labels
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.help_outline),
+            title: const Text('Help & feedback'),
+            onTap: () {
+              // TODO: Implement Help & feedback
+            },
+          ),
+        ],
       ),
     );
   }
