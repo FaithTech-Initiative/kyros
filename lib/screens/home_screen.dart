@@ -1,38 +1,34 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kyros/models/note_model.dart';
 import 'package:kyros/screens/audio_screen.dart';
 import 'package:kyros/screens/image_screen.dart';
 import 'package:kyros/screens/note_screen.dart';
+import 'package:kyros/screens/profile_screen.dart';
 import 'package:kyros/widgets/expanding_fab.dart';
 
 class HomeScreen extends StatefulWidget {
-  final String? userId;
-
-  const HomeScreen({super.key, this.userId});
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late Stream<QuerySnapshot> _notesStream;
+  bool _isSearchActive = false;
+  final String? userId = FirebaseAuth.instance.currentUser?.uid;
 
-  @override
-  void initState() {
-    super.initState();
-    _notesStream = FirebaseFirestore.instance
-        .collection('users')
-        .doc(widget.userId)
-        .collection('notes')
-        .orderBy('createdAt', descending: true)
-        .snapshots();
+  void _toggleSearch() {
+    setState(() {
+      _isSearchActive = !_isSearchActive;
+    });
   }
 
   void _navigateToNotePage({Note? note}) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => NoteScreen(note: note, userId: widget.userId),
+        builder: (context) => NoteScreen(note: note, userId: userId),
       ),
     );
   }
@@ -47,7 +43,53 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+    if (userId == null || user == null) {
+      return const Scaffold(
+        body: Center(child: Text("User not logged in")),
+      );
+    }
+
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () {
+            // Handle menu action
+          },
+        ),
+        title: _isSearchActive
+            ? const TextField(
+                decoration: InputDecoration(
+                  hintText: 'Search...',
+                  border: InputBorder.none,
+                ),
+              )
+            : const Text('Logo'), // Placeholder for your logo
+        centerTitle: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: _toggleSearch,
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProfileScreen(),
+                ),
+              );
+            },
+            child: CircleAvatar(
+              backgroundImage: user.photoURL != null ? NetworkImage(user.photoURL!) : null,
+              child: user.photoURL == null ? const Icon(Icons.person) : null,
+            ),
+          ),
+          const SizedBox(width: 16),
+        ],
+        elevation: 0,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -62,7 +104,12 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 16),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
-                stream: _notesStream,
+                stream: FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(userId)
+                    .collection('notes')
+                    .orderBy('createdAt', descending: true)
+                    .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     return const Center(child: Text('Something went wrong'));
@@ -81,15 +128,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   }
 
-                  return ListView(                    children: snapshot.data!.docs.map((DocumentSnapshot document) {
+                  return ListView(
+                    children: snapshot.data!.docs.map((DocumentSnapshot document) {
                       Map<String, dynamic> data = document.data()! as Map<String, dynamic>;
                       final note = Note.fromMap(data, document.id);
                       return Card(
                         elevation: 2,
                         margin: const EdgeInsets.symmetric(vertical: 8),
                         child: ListTile(
-                          title: Text(note.title,
-                              style: const TextStyle(fontWeight: FontWeight.bold)),
+                          title: Text(note.title, style: const TextStyle(fontWeight: FontWeight.bold)),
                           subtitle: Text(
                             note.content,
                             maxLines: 2,
@@ -119,7 +166,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => AudioScreen(userId: widget.userId ?? ''),
+                  builder: (context) => AudioScreen(userId: userId ?? ''),
                 ),
               );
             },

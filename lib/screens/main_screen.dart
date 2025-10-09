@@ -1,10 +1,7 @@
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kyros/screens/bible_screen.dart';
+import 'package:kyros/screens/home_screen.dart';
 import 'package:kyros/screens/my_wiki_screen.dart';
-import 'package:kyros/screens/note_list_screen.dart';
-import 'package:kyros/screens/profile_screen.dart';
 import 'package:kyros/screens/study_tools_screen.dart';
 
 class MainScreen extends StatefulWidget {
@@ -17,7 +14,6 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   late PageController _pageController;
-  bool _isSearchActive = false;
 
   @override
   void initState() {
@@ -45,75 +41,16 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  void _toggleSearch() {
-    setState(() {
-      _isSearchActive = !_isSearchActive;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      // This should ideally not happen if the navigation is set up correctly
-      return const Scaffold(
-        body: Center(
-          child: Text('Error: No user logged in.'),
-        ),
-      );
-    }
-
     final pages = [
-      const NoteListScreen(),
+      const HomeScreen(),
       const BibleScreen(),
       const StudyToolsScreen(),
       const MyWikiScreen(),
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () {
-            // Handle menu action
-          },
-        ),
-        title: _isSearchActive
-            ? const TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search...',
-                  border: InputBorder.none,
-                ),
-              )
-            : const Text('Logo'), // Placeholder for your logo
-        // align the title to the left
-        centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: _toggleSearch,
-          ),
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ProfileScreen(),
-                ),
-              );
-            },
-            child: CircleAvatar(
-              backgroundImage:
-                  user.photoURL != null ? NetworkImage(user.photoURL!) : null,
-              child: user.photoURL == null
-                  ? const Icon(Icons.person)
-                  : null,
-            ),
-          ),
-          const SizedBox(width: 16),
-        ],
-        elevation: 0,
-      ),
       body: PageView(
         controller: _pageController,
         onPageChanged: _onPageChanged,
