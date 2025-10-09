@@ -7,6 +7,7 @@ import 'package:kyros/screens/audio_screen.dart';
 import 'package:kyros/screens/image_screen.dart';
 import 'package:kyros/screens/note_screen.dart';
 import 'package:kyros/screens/profile_screen.dart';
+import 'package:kyros/widgets/app_drawer.dart';
 import 'package:kyros/widgets/expanding_fab.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isSearchActive = false;
   final String? userId = FirebaseAuth.instance.currentUser?.uid;
 
@@ -55,12 +57,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final iconColor = Theme.of(context).appBarTheme.foregroundColor;
 
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         backgroundColor: appBarColor,
         leading: IconButton(
           icon: Icon(Icons.menu, color: iconColor),
           onPressed: () {
-            // Handle menu action
+            _scaffoldKey.currentState?.openDrawer();
           },
         ),
         title: _isSearchActive
@@ -71,15 +74,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               )
             : Padding(
-                padding: const EdgeInsets.only(left: 0.0), // Adjust this value to bring the logo closer
+                padding: const EdgeInsets.only(left: 0.0),
                 child: SvgPicture.asset(
                   'assets/images/logo.svg',
-                  height: 48, // Increased logo size by 1.2x
+                  height: 48,
                   colorFilter: ColorFilter.mode(iconColor!, BlendMode.srcIn),
                 ),
               ),
         centerTitle: false,
-        titleSpacing: 0, // Added to remove default spacing
+        titleSpacing: 0,
         actions: [
           IconButton(
             icon: Icon(Icons.search, color: iconColor),
@@ -95,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
             child: CircleAvatar(
-              backgroundColor: iconColor, // Added for visibility
+              backgroundColor: iconColor,
               backgroundImage: user.photoURL != null ? NetworkImage(user.photoURL!) : null,
               child: user.photoURL == null
                   ? Icon(Icons.person, color: appBarColor)
@@ -106,6 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
         elevation: 0,
       ),
+      drawer: const AppDrawer(),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
