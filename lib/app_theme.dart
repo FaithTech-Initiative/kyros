@@ -21,6 +21,7 @@ class AppTheme {
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
       ),
+      iconTheme: const IconThemeData(color: Colors.black),
     );
   }
 
@@ -40,6 +41,7 @@ class AppTheme {
         backgroundColor: darkBackgroundColor,
         foregroundColor: Colors.white,
       ),
+      iconTheme: const IconThemeData(color: Colors.white),
     );
   }
 }
