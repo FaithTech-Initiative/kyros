@@ -5,10 +5,8 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    serverClientId: '896490665397-2550n2v9e0msagf4de83u8pgqg3sht8c.apps.googleusercontent.com',
-    scopes: ['email'],
-  );
+  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+
 
   Future<User?> signInWithEmailAndPassword(String email, String password) async {
     try {
@@ -38,20 +36,9 @@ class AuthService {
 
   Future<User?> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
       
-      if (googleUser == null) {
-        return null; // The user canceled the sign-in
-      }
-      
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      
-      if (googleAuth.idToken == null) {
-        throw FirebaseAuthException(
-          code: 'ERROR_MISSING_GOOGLE_ID_TOKEN',
-          message: 'Missing Google ID Token',
-        );
-      }
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
       
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
@@ -103,4 +90,8 @@ class AuthService {
       // It's possible that the user was not signed in with Google
     }
   }
+}
+
+extension on GoogleSignInAuthentication {
+  String? get accessToken => null;
 }
