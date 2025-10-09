@@ -50,37 +50,43 @@ class _MainScreenState extends State<MainScreen> {
       const MyWikiScreen(),
     ];
 
-    return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: _onPageChanged,
-        children: pages,
+    return Theme(
+      data: Theme.of(context).copyWith(
+        canvasColor: Theme.of(context).bottomAppBarTheme.color,
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_outlined),
-            activeIcon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book_outlined),
-            activeIcon: Icon(Icons.book),
-            label: 'Bible',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.build_outlined),
-            activeIcon: Icon(Icons.build),
-            label: 'Study Tools',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history_edu_outlined),
-            activeIcon: Icon(Icons.history_edu),
-            label: 'My Wiki',
-          ),
-        ],
+      child: Scaffold(
+        body: PageView(
+          controller: _pageController,
+          onPageChanged: _onPageChanged,
+          children: pages,
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          currentIndex: _currentIndex,
+          onTap: _onTabTapped,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_outlined),
+              activeIcon: Icon(Icons.home),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.book_outlined),
+              activeIcon: Icon(Icons.book),
+              label: 'Bible',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.build_outlined),
+              activeIcon: Icon(Icons.build),
+              label: 'Study Tools',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.history_edu_outlined),
+              activeIcon: Icon(Icons.history_edu),
+              label: 'My Wiki',
+            ),
+          ],
+        ),
       ),
     );
   }
