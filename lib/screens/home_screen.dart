@@ -70,12 +70,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   border: InputBorder.none,
                 ),
               )
-            : SvgPicture.asset(
-                'assets/images/logo.svg',
-                height: 30,
-                colorFilter: ColorFilter.mode(iconColor!, BlendMode.srcIn),
+            : Padding(
+                padding: const EdgeInsets.only(left: 0.0), // Adjust this value to bring the logo closer
+                child: SvgPicture.asset(
+                  'assets/images/logo.svg',
+                  height: 40, // Increased logo size
+                  colorFilter: ColorFilter.mode(iconColor!, BlendMode.srcIn),
+                ),
               ),
         centerTitle: false,
+        titleSpacing: 0, // Added to remove default spacing
         actions: [
           IconButton(
             icon: Icon(Icons.search, color: iconColor),
