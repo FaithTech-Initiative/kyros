@@ -6,8 +6,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:kyros/app_theme.dart';
 import 'package:kyros/firebase_options.dart';
 import 'package:kyros/screens/auth_screen.dart';
+import 'package:kyros/screens/bible_versions_screen.dart';
 import 'package:kyros/screens/get_started_screen.dart';
 import 'package:kyros/screens/main_screen.dart';
+import 'package:kyros/services/bible_service.dart';
 import 'package:kyros/services/notes_service.dart';
 import 'package:kyros/theme_provider.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +35,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
         ChangeNotifierProvider(create: (context) => NotesService()),
+        Provider(create: (context) => BibleService()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
@@ -81,7 +84,8 @@ class MyApp extends StatelessWidget {
                       return const MainScreen();
                     }
                     return const AuthScreen();
-                  }
+                  },
+                  '/bible-versions': (context) => const BibleVersionsScreen(),
                 },
               );
             },

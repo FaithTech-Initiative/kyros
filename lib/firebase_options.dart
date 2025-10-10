@@ -64,6 +64,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '896490665397',
     projectId: 'kyrosapp-100f7',
     storageBucket: 'kyrosapp-100f7.firebasestorage.app',
+    androidClientId: '896490665397-5b1annbcltanrdmbvoa87o89sa8fsb9l.apps.googleusercontent.com',
+    iosClientId: '896490665397-kdas4htf5duu3rqr3d4ol5osqv7fog4t.apps.googleusercontent.com',
     iosBundleId: 'com.example.kyros',
   );
 
@@ -73,6 +75,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '896490665397',
     projectId: 'kyrosapp-100f7',
     storageBucket: 'kyrosapp-100f7.firebasestorage.app',
+    androidClientId: '896490665397-5b1annbcltanrdmbvoa87o89sa8fsb9l.apps.googleusercontent.com',
+    iosClientId: '896490665397-kdas4htf5duu3rqr3d4ol5osqv7fog4t.apps.googleusercontent.com',
     iosBundleId: 'com.example.kyros',
   );
 
@@ -85,4 +89,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'kyrosapp-100f7.firebasestorage.app',
     measurementId: 'G-XPXXVMDJBD',
   );
+
 }
