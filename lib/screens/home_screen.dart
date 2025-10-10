@@ -73,14 +73,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   border: InputBorder.none,
                 ),
               )
-            : Padding(
-                padding: const EdgeInsets.only(left: 0.0),
-                child: SvgPicture.asset(
+            : SvgPicture.asset(
                   'assets/images/logo.svg',
-                  height: 48,
+                  height: 94,
                   colorFilter: ColorFilter.mode(iconColor!, BlendMode.srcIn),
                 ),
-              ),
         centerTitle: false,
         titleSpacing: 0,
         actions: [
