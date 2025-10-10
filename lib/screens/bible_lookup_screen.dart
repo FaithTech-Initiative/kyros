@@ -199,6 +199,6 @@ class _BibleLookupScreenState extends State<BibleLookupScreen> {
       );
     }
 
-    return const SizedBox.shrink(); // Return an empty widget if there's no result yet
+    return const SizedBox.shrink(); 
   }
 }

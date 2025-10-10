@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kyros/screens/bible_screen.dart';
+import 'package:kyros/screens/bible_lookup_screen.dart';
 import 'package:kyros/screens/home_screen.dart';
 import 'package:kyros/screens/my_wiki_screen.dart';
 import 'package:kyros/screens/study_tools_screen.dart';
@@ -45,7 +45,7 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     final pages = [
       const HomeScreen(),
-      const BibleScreen(),
+      const BibleLookupScreen(),
       const StudyToolsScreen(),
       const MyWikiScreen(),
     ];

@@ -2,11 +2,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:kyros/models/note_model.dart';
+import 'package:kyros/models/note.dart';
 import 'package:kyros/screens/audio_screen.dart';
 import 'package:kyros/screens/image_screen.dart';
 import 'package:kyros/screens/note_screen.dart';
 import 'package:kyros/screens/profile_screen.dart';
+import 'package:kyros/services/database_helper.dart';
 import 'package:kyros/widgets/app_drawer.dart';
 import 'package:kyros/widgets/expanding_fab.dart';
 
@@ -21,6 +22,37 @@ class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   bool _isSearchActive = false;
   final String? userId = FirebaseAuth.instance.currentUser?.uid;
+  List<Note> _notes = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotes();
+    _syncNotes();
+  }
+
+  void _loadNotes() async {
+    final notes = await DatabaseHelper.instance.readAllNotes();
+    setState(() {
+      _notes = notes;
+    });
+  }
+
+  void _syncNotes() async {
+    if (userId != null) {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('notes')
+          .get();
+
+      for (var doc in querySnapshot.docs) {
+        final note = Note.fromMap(doc.data());
+        await DatabaseHelper.instance.create(note);
+      }
+      _loadNotes();
+    }
+  }
 
   void _toggleSearch() {
     setState(() {
@@ -33,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
       MaterialPageRoute(
         builder: (context) => NoteScreen(note: note, userId: userId),
       ),
-    );
+    ).then((_) => _loadNotes());
   }
 
   void _pickImage() {
@@ -120,52 +152,32 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                    .collection('users')
-                    .doc(userId)
-                    .collection('notes')
-                    .orderBy('createdAt', descending: true)
-                    .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return const Center(child: Text('Something went wrong'));
-                  }
-
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  if (snapshot.data!.docs.isEmpty) {
-                    return const Center(
+              child: _notes.isEmpty
+                  ? const Center(
                       child: Text(
                         'No notes yet. Tap the + button to add one!',
                         textAlign: TextAlign.center,
                       ),
-                    );
-                  }
-
-                  return ListView(
-                    children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                      Map<String, dynamic> data = document.data()! as Map<String, dynamic>;
-                      final note = Note.fromMap(data, document.id);
-                      return Card(
-                        elevation: 2,
-                        margin: const EdgeInsets.symmetric(vertical: 8),
-                        child: ListTile(
-                          title: Text(note.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-                          subtitle: Text(
-                            note.content,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                    )
+                  : ListView.builder(
+                      itemCount: _notes.length,
+                      itemBuilder: (context, index) {
+                        final note = _notes[index];
+                        return Card(
+                          elevation: 2,
+                          margin: const EdgeInsets.symmetric(vertical: 8),
+                          child: ListTile(
+                            title: Text(note.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            subtitle: Text(
+                              note.content,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            onTap: () => _navigateToNotePage(note: note),
                           ),
-                          onTap: () => _navigateToNotePage(note: note),
-                        ),
-                      );
-                    }).toList(),
-                  );
-                },
-              ),
+                        );
+                      },
+                    ),
             ),
           ],
         ),

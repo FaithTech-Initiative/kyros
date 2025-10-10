@@ -1,9 +1,9 @@
-
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:kyros/models/note_model.dart';
+import 'package:kyros/models/note.dart';
+import 'package:kyros/services/database_helper.dart';
 import 'package:kyros/widgets/note_editor.dart';
 import 'package:uuid/uuid.dart';
 
@@ -18,7 +18,6 @@ class NoteScreen extends StatefulWidget {
 
 class _NoteScreenState extends State<NoteScreen> {
   late TextEditingController _titleController;
-  late TextEditingController _subtitleController;
   late TextEditingController _contentController;
   String? _imagePath;
   Timer? _autoSaveTimer;
@@ -27,12 +26,30 @@ class _NoteScreenState extends State<NoteScreen> {
   @override
   void initState() {
     super.initState();
-    _titleController = TextEditingController(text: widget.note?.title);
-    _subtitleController = TextEditingController(text: widget.note?.subtitle);
-    _contentController = TextEditingController(text: widget.note?.content);
-    _imagePath = widget.note?.imagePath;
-    _lastEditedAt = widget.note?.lastEditedAt;
+    _loadNote();
     _startAutoSave();
+  }
+
+  void _loadNote() async {
+    if (widget.note != null) {
+      try {
+        final note = await DatabaseHelper.instance.readNote(widget.note!.id!);
+        _titleController = TextEditingController(text: note.title);
+        _contentController = TextEditingController(text: note.content);
+        _imagePath = note.imageUrls.isNotEmpty ? note.imageUrls.first : null;
+        _lastEditedAt = note.createdAt.toDate();
+      } catch (e) {
+        // Note not found in local DB, use widget's data
+        _titleController = TextEditingController(text: widget.note!.title);
+        _contentController = TextEditingController(text: widget.note!.content);
+         _imagePath = widget.note!.imageUrls.isNotEmpty ? widget.note!.imageUrls.first : null;
+        _lastEditedAt = widget.note!.createdAt.toDate();
+      }
+    } else {
+      _titleController = TextEditingController();
+      _contentController = TextEditingController();
+    }
+    setState(() {});
   }
 
   @override
@@ -40,7 +57,6 @@ class _NoteScreenState extends State<NoteScreen> {
     _autoSaveTimer?.cancel();
     _saveNote();
     _titleController.dispose();
-    _subtitleController.dispose();
     _contentController.dispose();
     super.dispose();
   }
@@ -53,23 +69,24 @@ class _NoteScreenState extends State<NoteScreen> {
 
   Future<void> _saveNote() async {
     final title = _titleController.text;
-    final subtitle = _subtitleController.text;
     final content = _contentController.text;
-    if (title.isNotEmpty ||
-        subtitle.isNotEmpty ||
-        content.isNotEmpty ||
-        _imagePath != null) {
-      final now = DateTime.now();
+    if (title.isNotEmpty || content.isNotEmpty || _imagePath != null) {
+      final now = Timestamp.now();
       final note = Note(
-          id: widget.note?.id ?? const Uuid().v4(),
-          title: title,
-          subtitle: subtitle,
-          content: content,
-          createdAt: widget.note?.createdAt ?? now,
-          imagePath: _imagePath,
-          lastEditedAt: now);
+        id: widget.note?.id ?? const Uuid().v4(),
+        title: title,
+        content: content,
+        createdAt: widget.note?.createdAt ?? now,
+        imageUrls: _imagePath != null ? [_imagePath!] : [],
+      );
 
-      final noteData = note.toMap();
+      // Save to local database
+      try {
+        await DatabaseHelper.instance.readNote(note.id!);
+        await DatabaseHelper.instance.update(note);
+      } catch (e) {
+        await DatabaseHelper.instance.create(note);
+      }
 
       if (widget.userId != null) {
         final noteRef = FirebaseFirestore.instance
@@ -77,10 +94,10 @@ class _NoteScreenState extends State<NoteScreen> {
             .doc(widget.userId)
             .collection('notes')
             .doc(note.id);
-        await noteRef.set(noteData, SetOptions(merge: true));
+        await noteRef.set(note.toMap(), SetOptions(merge: true));
         if (mounted) {
           setState(() {
-            _lastEditedAt = now;
+            _lastEditedAt = now.toDate();
           });
         }
       }
@@ -98,7 +115,6 @@ class _NoteScreenState extends State<NoteScreen> {
       child: Scaffold(
         body: NoteEditor(
           titleController: _titleController,
-          subtitleController: _subtitleController,
           contentController: _contentController,
           imagePath: _imagePath,
           onImagePathChanged: (path) {

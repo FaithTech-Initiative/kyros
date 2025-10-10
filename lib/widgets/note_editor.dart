@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 
 class NoteEditor extends StatelessWidget {
   final TextEditingController titleController;
-  final TextEditingController subtitleController;
   final TextEditingController contentController;
   final String? imagePath;
   final ValueChanged<String?> onImagePathChanged;
@@ -16,7 +15,6 @@ class NoteEditor extends StatelessWidget {
   const NoteEditor({
     super.key,
     required this.titleController,
-    required this.subtitleController,
     required this.contentController,
     this.imagePath,
     required this.onImagePathChanged,
@@ -59,15 +57,6 @@ class NoteEditor extends StatelessWidget {
                 border: InputBorder.none,
               ),
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: subtitleController,
-              decoration: const InputDecoration(
-                hintText: 'Subtitle',
-                border: InputBorder.none,
-              ),
-              style: const TextStyle(fontSize: 18, fontStyle: FontStyle.italic),
             ),
             const SizedBox(height: 16),
             Expanded(

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:kyros/models/note.dart';
 
@@ -7,7 +8,7 @@ class NotesService extends ChangeNotifier {
   List<Note> get notes => _notes;
 
   void addNote(String title, String content) {
-    final newNote = Note(title: title, content: content);
+    final newNote = Note(title: title, content: content, createdAt: Timestamp.now());
     _notes.add(newNote);
     notifyListeners();
   }
