@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kyros/data/bible_data.dart';
 import 'package:kyros/screens/chapter_selection_screen.dart';
+import 'package:kyros/screens/versions_screen.dart';
 
 class BibleReferencesScreen extends StatefulWidget {
   const BibleReferencesScreen({super.key});
@@ -22,6 +23,17 @@ class _BibleReferencesScreenState extends State<BibleReferencesScreen> {
       appBar: AppBar(
         title: const Text('References'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.book),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const VersionsScreen(),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.sort_by_alpha),
             onPressed: () {

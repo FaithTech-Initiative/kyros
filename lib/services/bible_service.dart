@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:developer' as developer;
 
+import 'package:archive/archive.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class BibleService {
-  final String _baseUrl = 'https://bible-api.com/';
+  final String _baseUrl = 'https://www.biblesupersearch.com/download/';
 
   final List<String> _availableVersions = [
     'bbe', // Bible in Basic English
@@ -31,7 +33,7 @@ class BibleService {
   }
 
   Future<Map<String, dynamic>> getVerse(String reference, {String? translation}) async {
-    String url = '$_baseUrl$reference';
+    String url = 'https://bible-api.com/$reference';
     if (translation != null) {
       url += '?translation=$translation';
     }
@@ -45,39 +47,54 @@ class BibleService {
   }
 
   Future<void> downloadBibleVersion(String versionName) async {
-    developer.log('Downloading $versionName...', name: 'bible.service');
+    if (await Permission.storage.request().isGranted) {
+      developer.log('Downloading $versionName...', name: 'bible.service');
 
-    final directory = await getApplicationDocumentsDirectory();
-    final path = directory.path;
-    final file = File('$path/$versionName.json');
+      final directory = await getApplicationDocumentsDirectory();
+      final path = directory.path;
+      final zipFile = File('$path/$versionName.zip');
+      final bibleFile = File('$path/$versionName.json');
 
-    Map<String, dynamic> bibleContent = {'name': versionName, 'books': {}};
+      try {
+        final response = await http.get(Uri.parse('$_baseUrl$versionName.zip'));
+        if (response.statusCode == 200) {
+          await zipFile.writeAsBytes(response.bodyBytes);
 
-    try {
-        final response = await http.get(Uri.parse('$_baseUrl/Genesis 1?translation=$versionName'));
-        if(response.statusCode == 200) {
-            bibleContent['books']['Genesis'] = {'1': json.decode(response.body)};
+          // Unzip the file
+          final bytes = zipFile.readAsBytesSync();
+          final archive = ZipDecoder().decodeBytes(bytes);
+
+          for (final file in archive) {
+            final filename = file.name;
+            if (filename.endsWith('.json')) {
+              final data = file.content as List<int>;
+              await bibleFile.writeAsBytes(data);
+              break;
+            }
+          }
+
+          await zipFile.delete();
+        } else {
+          throw Exception('Failed to download Bible version');
         }
-    } catch (e, s) {
+      } catch (e, s) {
         developer.log('Error downloading chapter', name: 'bible.service', error: e, stackTrace: s);
+      }
+
+      developer.log('$versionName downloaded to $path', name: 'bible.service');
     }
-
-
-    await file.writeAsString(json.encode(bibleContent));
-
-    developer.log('$versionName downloaded to $path', name: 'bible.service');
   }
 
-  Future<String> getDownloadedBibleVersion(String versionName) async {
+  Future<Map<String, dynamic>> getDownloadedBibleVersion(String versionName) async {
     try {
       final directory = await getApplicationDocumentsDirectory();
       final path = directory.path;
       final file = File('$path/$versionName.json');
 
       final contents = await file.readAsString();
-      return contents;
+      return json.decode(contents);
     } catch (e) {
-      return 'File not found';
+      return {'error': 'File not found'};
     }
   }
 

@@ -1,16 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:kyros/screens/versions_screen.dart';
+import 'package:kyros/services/bible_service.dart';
 
-class VerseScreen extends StatelessWidget {
+class VerseScreen extends StatefulWidget {
   final String book;
   final int chapter;
 
   const VerseScreen({super.key, required this.book, required this.chapter});
 
   @override
+  State<VerseScreen> createState() => _VerseScreenState();
+}
+
+class _VerseScreenState extends State<VerseScreen> {
+  final BibleService _bibleService = BibleService();
+  String _selectedVersion = 'kjv';
+  Future<Map<String, dynamic>>? _bibleContent;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBibleContent();
+  }
+
+  void _loadBibleContent() {
+    _bibleContent = _bibleService.getDownloadedBibleVersion(_selectedVersion);
+  }
+
+  void _onVersionSelected(String version) {
+    setState(() {
+      _selectedVersion = version;
+      _loadBibleContent();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('$book $chapter'),
+        title: Text('${widget.book} ${widget.chapter}'),
         actions: [
           IconButton(
             icon: const Icon(Icons.volume_up),
@@ -32,50 +60,73 @@ class VerseScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: const SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'The Beginning',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: _bibleContent,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError || !snapshot.hasData || snapshot.data!.containsKey('error')) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Error loading Bible content. Please download the version first.'),
+                  ElevatedButton(
+                      onPressed: () async {
+                        final selected = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const VersionsScreen(),
+                          ),
+                        );
+                        if (selected != null) {
+                          _onVersionSelected(selected);
+                        }
+                      },
+                      child: const Text('Go to Versions'))
+                ],
+              ),
+            );
+          }
+
+          final bible = snapshot.data!;
+          final bookData = bible['books'][widget.book];
+          if (bookData == null) {
+            return const Center(child: Text('Book not found in this version.'));
+          }
+          final chapterData = bookData[widget.chapter.toString()];
+          if (chapterData == null) {
+            return const Center(child: Text('Chapter not found in this version.'));
+          }
+          final verses = chapterData as Map<String, dynamic>;
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: verses.entries.map((entry) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: Text('${entry.key} ${entry.value}'),
+                );
+              }).toList(),
             ),
-            SizedBox(height: 16),
-            Text(
-              '1 In the beginning God created the heavens and the earth. 2 Now the earth was formless and empty, darkness was over the surface of the deep, and the Spirit of God was hovering over the waters. 3 And God said, “Let there be light,” and there was light. 4 God saw that the light was good, and he separated the light from the darkness. 5 God called the light “day,” and the darkness he called “night.” And there was evening, and there was morning—the first day.',
-              style: TextStyle(fontSize: 16, height: 1.5),
-            ),
-            SizedBox(height: 16),
-             Text(
-              'Adam and Eve',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 16),
-            Text(
-              '1 This is the account of the heavens and the earth when they were created, when the Lord God made the earth and the heavens. 2 Now no shrub had yet appeared on the earth and no plant had yet sprung up, for the Lord God had not sent rain on the earth and there was no one to work the ground,',
-              style: TextStyle(fontSize: 16, height: 1.5),
-            ),
-          ],
-        ),
+          );
+        },
       ),
       bottomNavigationBar: BottomAppBar(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            IconButton(
-              icon: const Icon(Icons.play_arrow),
-              onPressed: () {
-                // TODO: Implement play
-              },
-            ),
+            Text(_selectedVersion.toUpperCase()),
             IconButton(
               icon: const Icon(Icons.arrow_back_ios),
               onPressed: () {
                 Navigator.pop(context);
               },
             ),
-            Text('$book $chapter'),
+            Text('${widget.book} ${widget.chapter}'),
             IconButton(
               icon: const Icon(Icons.arrow_forward_ios),
               onPressed: () {
