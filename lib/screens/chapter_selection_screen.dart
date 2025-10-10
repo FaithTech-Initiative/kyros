@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kyros/screens/verse_screen.dart';
+import 'package:kyros/services/history_service.dart';
 
 class ChapterSelectionScreen extends StatelessWidget {
   final String book;
@@ -25,6 +26,7 @@ class ChapterSelectionScreen extends StatelessWidget {
           final chapter = index + 1;
           return GestureDetector(
             onTap: () {
+              HistoryService.add_to_history(book, chapter);
               Navigator.push(
                 context,
                 MaterialPageRoute(

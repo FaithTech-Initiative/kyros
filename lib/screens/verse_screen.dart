@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:kyros/data/bible_data.dart';
 import 'package:kyros/screens/versions_screen.dart';
 import 'package:kyros/services/bible_service.dart';
 
@@ -16,11 +18,27 @@ class _VerseScreenState extends State<VerseScreen> {
   final BibleService _bibleService = BibleService();
   String _selectedVersion = 'kjv';
   Future<Map<String, dynamic>>? _bibleContent;
+  late FlutterTts _flutterTts;
+  bool _isSpeaking = false;
+  String _chapterText = '';
+  bool _isSearchActive = false;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchText = '';
 
   @override
   void initState() {
     super.initState();
     _loadBibleContent();
+    _initTts();
+  }
+
+  void _initTts() {
+    _flutterTts = FlutterTts();
+    _flutterTts.setCompletionHandler(() {
+      setState(() {
+        _isSpeaking = false;
+      });
+    });
   }
 
   void _loadBibleContent() {
@@ -34,30 +52,79 @@ class _VerseScreenState extends State<VerseScreen> {
     });
   }
 
+  Future<void> _speak() async {
+    if (_chapterText.isNotEmpty) {
+      setState(() {
+        _isSpeaking = true;
+      });
+      await _flutterTts.speak(_chapterText);
+    }
+  }
+
+  Future<void> _stop() async {
+    await _flutterTts.stop();
+    setState(() {
+      _isSpeaking = false;
+    });
+  }
+
+  void _navigateToChapter(int chapter) {
+    if (chapter > 0 && chapter <= bibleBooks[widget.book]!) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => VerseScreen(book: widget.book, chapter: chapter),
+        ),
+      );
+    }
+  }
+
+  void _toggleSearch() {
+    setState(() {
+      _isSearchActive = !_isSearchActive;
+      if (!_isSearchActive) {
+        _searchText = '';
+        _searchController.clear();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _flutterTts.stop();
+    _searchController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.book} ${widget.chapter}'),
+        title: _isSearchActive
+            ? TextField(
+                controller: _searchController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: 'Search in chapter...',
+                  border: InputBorder.none,
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    _searchText = value;
+                  });
+                },
+              )
+            : Text('${widget.book} ${widget.chapter}'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.volume_up),
-            onPressed: () {
-              // TODO: Implement text-to-speech
-            },
+            icon: Icon(_isSearchActive ? Icons.close : Icons.search),
+            onPressed: _toggleSearch,
           ),
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // TODO: Implement search
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () {
-              // TODO: Implement more options
-            },
-          ),
+          if (!_isSearchActive)
+            IconButton(
+              icon: Icon(_isSpeaking ? Icons.stop : Icons.volume_up),
+              onPressed: _isSpeaking ? _stop : _speak,
+            ),
         ],
       ),
       body: FutureBuilder<Map<String, dynamic>>(
@@ -101,16 +168,40 @@ class _VerseScreenState extends State<VerseScreen> {
           }
           final verses = chapterData as Map<String, dynamic>;
 
+          _chapterText = verses.entries.map((e) => '${e.key} ${e.value}').join(' ');
+
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: verses.entries.map((entry) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: Text('${entry.key} ${entry.value}'),
-                );
-              }).toList(),
+            child: RichText(
+              text: TextSpan(
+                style: DefaultTextStyle.of(context).style,
+                children: verses.entries.map((entry) {
+                  final verseText = '${entry.key} ${entry.value}';
+                  final List<TextSpan> textSpans = [];
+                  if (_searchText.isNotEmpty && verseText.toLowerCase().contains(_searchText.toLowerCase())) {
+                    final matches = _searchText.toLowerCase().allMatches(verseText.toLowerCase());
+                    int lastMatchEnd = 0;
+                    for (var match in matches) {
+                      if (match.start > lastMatchEnd) {
+                        textSpans.add(TextSpan(text: verseText.substring(lastMatchEnd, match.start)));
+                      }
+                      textSpans.add(
+                        TextSpan(
+                          text: verseText.substring(match.start, match.end),
+                          style: const TextStyle(backgroundColor: Colors.yellow),
+                        ),
+                      );
+                      lastMatchEnd = match.end;
+                    }
+                    if (lastMatchEnd < verseText.length) {
+                      textSpans.add(TextSpan(text: verseText.substring(lastMatchEnd)));
+                    }
+                  } else {
+                    textSpans.add(TextSpan(text: verseText));
+                  }
+                  return TextSpan(children: textSpans..add(const TextSpan(text: '\n\n')));
+                }).toList(),
+              ),
             ),
           );
         },
@@ -119,18 +210,17 @@ class _VerseScreenState extends State<VerseScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            Text(_selectedVersion.toUpperCase()),
             IconButton(
               icon: const Icon(Icons.arrow_back_ios),
               onPressed: () {
-                Navigator.pop(context);
+                _navigateToChapter(widget.chapter - 1);
               },
             ),
             Text('${widget.book} ${widget.chapter}'),
             IconButton(
               icon: const Icon(Icons.arrow_forward_ios),
               onPressed: () {
-                // TODO: Implement next chapter
+                _navigateToChapter(widget.chapter + 1);
               },
             ),
           ],
