@@ -1,40 +1,60 @@
-# Kyros Note-Taking App Blueprint
+# Kyros App Blueprint
 
 ## Overview
 
-This document outlines the architecture, features, and development plan for the Kyros note-taking application. The goal is to create a feature-rich, intuitive, and visually appealing note-taking experience for users.
+This document outlines the features and implementation plan for the Kyros Bible study app.
 
-## Implemented Features (as of now)
+## Implemented Features
 
-*   **Firebase Authentication:** Users can sign in using email/password and Google Sign-In.
-*   **Basic App Structure:** A home screen, authentication screen, and basic navigation are in place.
-*   **Themeing:** The app uses a theme provider to manage light and dark themes, with support for dynamic colors on Android.
-*   **Initial Scaffolding:** The project is set up with necessary dependencies and a basic file structure.
+*   **Bible Reader:**
+    *   Browse and read different Bible versions.
+    *   Download Bible versions for offline access.
+    *   Search for verses within a chapter.
+    *   Listen to the audio of a chapter.
+*   **Reading History:**
+    *   Keeps track of the user's reading history.
+*   **My Wiki:**
+    *   A personal wiki for taking notes and creating study guides.
 
-## Plan for a Robust Note-Taking Feature
+## Current Plan: New Features
 
-Here is the step-by-step plan to implement a comprehensive note-taking feature:
+Here is the plan to implement the new features you requested:
 
-1.  **Local Database Setup:**
-    *   Create a `Note` model to define the structure of a note (id, title, content, timestamp, etc.).
-    *   Implement a `DatabaseHelper` class to manage a local SQLite database for storing notes. This will allow for offline access and faster performance.
+### 1. Daily Verse
 
-2.  **Note Creation and Editing:**
-    *   Develop a `NoteScreen` that allows users to create new notes and edit existing ones.
-    *   This screen will feature a rich text editor for a great writing experience.
-    *   Integrate the `NoteScreen` with the `DatabaseHelper` to save and update notes.
+*   **Daily Verse Screen:**
+    *   Create a new screen to display the daily verse.
+    *   Fetch the daily verse from the `https://beta.ourmanna.com/api/v1/get?format=json&order=random` API.
+*   **Home Screen Integration:**
+    *   Display the daily verse prominently on the home screen.
 
-3.  **Displaying Notes:**
-    *   Modify the `HomeScreen` to display a list of all notes from the local database.
-    *   Implement a visually appealing layout for the note list, showing a preview of each note's content.
+### 2. Prayer Journal & Notebook
 
-4.  **Firestore Synchronization:**
-    *   Implement a mechanism to sync the local notes with a user-specific collection in Firestore.
-    *   This will ensure that a user's notes are backed up and accessible across multiple devices.
+*   **Unified Notes System:**
+    *   Implement a single, robust notes system to handle both the prayer journal and the notebook.
+*   **Note Model:**
+    *   Create a `Note` model with the following attributes: `id`, `title`, `content`, `date`, and `labels`.
+*   **Database:**
+    *   Set up a local SQLite database to store all notes, ensuring offline access and fast performance.
+*   **Note Screens:**
+    *   `NotesScreen`: A screen to display a list of all notes.
+    *   `NoteEditorScreen`: A screen with a rich text editor for creating and editing notes.
+*   **Note Actions:**
+    *   Implement full CRUD (Create, Read, Update, Delete) functionality.
+    *   Add the ability to "make a copy" of a note.
+*   **Labels:**
+    *   Allow users to add and manage labels for notes, making it easy to organize and filter them.
 
-5.  **Enhanced Note-Taking Features:**
-    *   Add the ability to archive and delete notes.
-    *   Implement a search functionality to easily find notes.
-    *   Allow users to attach images and audio recordings to their notes.
+### 3. Concordance
 
-I will now start by creating the `Note` model and the `DatabaseHelper` class.
+*   **Concordance Screen:**
+    *   Create a new screen that allows users to search for words and see all the verses where they appear.
+*   **Search Index:**
+    *   Parse the downloaded Bible versions to create a search index for fast and efficient searching.
+
+### 4. Search Language Selection
+
+*   **Language Setting:**
+    *   Add a setting to allow users to select their preferred language for Bible searches.
+*   **Integration:**
+    *   Use the selected language in both the concordance and the verse search.

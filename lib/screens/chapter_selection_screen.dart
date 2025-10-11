@@ -6,7 +6,8 @@ class ChapterSelectionScreen extends StatelessWidget {
   final String book;
   final int chapterCount;
 
-  const ChapterSelectionScreen({super.key, required this.book, required this.chapterCount});
+  const ChapterSelectionScreen(
+      {super.key, required this.book, required this.chapterCount});
 
   @override
   Widget build(BuildContext context) {
@@ -26,11 +27,12 @@ class ChapterSelectionScreen extends StatelessWidget {
           final chapter = index + 1;
           return GestureDetector(
             onTap: () {
-              HistoryService.add_to_history(book, chapter);
+              HistoryService.addToHistory(book, chapter);
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => VerseScreen(book: book, chapter: chapter),
+                  builder: (context) =>
+                      VerseScreen(book: book, chapter: chapter),
                 ),
               );
             },

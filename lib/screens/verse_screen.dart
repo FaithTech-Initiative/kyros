@@ -73,7 +73,8 @@ class _VerseScreenState extends State<VerseScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => VerseScreen(book: widget.book, chapter: chapter),
+          builder: (context) =>
+              VerseScreen(book: widget.book, chapter: chapter),
         ),
       );
     }
@@ -133,12 +134,15 @@ class _VerseScreenState extends State<VerseScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (snapshot.hasError || !snapshot.hasData || snapshot.data!.containsKey('error')) {
+          if (snapshot.hasError ||
+              !snapshot.hasData ||
+              snapshot.data!.containsKey('error')) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Error loading Bible content. Please download the version first.'),
+                  const Text(
+                      'Error loading Bible content. Please download the version first.'),
                   ElevatedButton(
                       onPressed: () async {
                         final selected = await Navigator.push(
@@ -164,11 +168,13 @@ class _VerseScreenState extends State<VerseScreen> {
           }
           final chapterData = bookData[widget.chapter.toString()];
           if (chapterData == null) {
-            return const Center(child: Text('Chapter not found in this version.'));
+            return const Center(
+                child: Text('Chapter not found in this version.'));
           }
           final verses = chapterData as Map<String, dynamic>;
 
-          _chapterText = verses.entries.map((e) => '${e.key} ${e.value}').join(' ');
+          _chapterText =
+              verses.entries.map((e) => '${e.key} ${e.value}').join(' ');
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
@@ -178,28 +184,38 @@ class _VerseScreenState extends State<VerseScreen> {
                 children: verses.entries.map((entry) {
                   final verseText = '${entry.key} ${entry.value}';
                   final List<TextSpan> textSpans = [];
-                  if (_searchText.isNotEmpty && verseText.toLowerCase().contains(_searchText.toLowerCase())) {
-                    final matches = _searchText.toLowerCase().allMatches(verseText.toLowerCase());
+                  if (_searchText.isNotEmpty &&
+                      verseText
+                          .toLowerCase()
+                          .contains(_searchText.toLowerCase())) {
+                    final matches = _searchText
+                        .toLowerCase()
+                        .allMatches(verseText.toLowerCase());
                     int lastMatchEnd = 0;
                     for (var match in matches) {
                       if (match.start > lastMatchEnd) {
-                        textSpans.add(TextSpan(text: verseText.substring(lastMatchEnd, match.start)));
+                        textSpans.add(TextSpan(
+                            text: verseText.substring(
+                                lastMatchEnd, match.start)));
                       }
                       textSpans.add(
                         TextSpan(
                           text: verseText.substring(match.start, match.end),
-                          style: const TextStyle(backgroundColor: Colors.yellow),
+                          style:
+                              const TextStyle(backgroundColor: Colors.yellow),
                         ),
                       );
                       lastMatchEnd = match.end;
                     }
                     if (lastMatchEnd < verseText.length) {
-                      textSpans.add(TextSpan(text: verseText.substring(lastMatchEnd)));
+                      textSpans.add(
+                          TextSpan(text: verseText.substring(lastMatchEnd)));
                     }
                   } else {
                     textSpans.add(TextSpan(text: verseText));
                   }
-                  return TextSpan(children: textSpans..add(const TextSpan(text: '\n\n')));
+                  return TextSpan(
+                      children: textSpans..add(const TextSpan(text: '\n\n')));
                 }).toList(),
               ),
             ),

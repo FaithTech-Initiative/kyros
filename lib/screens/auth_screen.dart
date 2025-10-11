@@ -58,7 +58,8 @@ class _AuthScreenState extends State<AuthScreen> {
       }
     } on FirebaseAuthException catch (error) {
       if (mounted) {
-        showSnackBar(context, error.message ?? 'Authentication failed.', isError: true);
+        showSnackBar(context, error.message ?? 'Authentication failed.',
+            isError: true);
       }
     } catch (error) {
       if (mounted) {
@@ -82,7 +83,8 @@ class _AuthScreenState extends State<AuthScreen> {
       await _authService.signInWithGoogle();
     } catch (error) {
       if (mounted) {
-        showSnackBar(context, 'Google Sign-In failed: ${error.toString()}', isError: true);
+        showSnackBar(context, 'Google Sign-In failed: ${error.toString()}',
+            isError: true);
       }
     } finally {
       if (mounted) {
@@ -102,7 +104,8 @@ class _AuthScreenState extends State<AuthScreen> {
       await _authService.signInWithApple();
     } catch (error) {
       if (mounted) {
-        showSnackBar(context, 'Apple Sign-In failed: ${error.toString()}', isError: true);
+        showSnackBar(context, 'Apple Sign-In failed: ${error.toString()}',
+            isError: true);
       }
     } finally {
       if (mounted) {
@@ -122,7 +125,8 @@ class _AuthScreenState extends State<AuthScreen> {
       await _authService.signInAnonymously();
     } catch (error) {
       if (mounted) {
-        showSnackBar(context, 'Guest sign-in failed: ${error.toString()}', isError: true);
+        showSnackBar(context, 'Guest sign-in failed: ${error.toString()}',
+            isError: true);
       }
     } finally {
       if (mounted) {
@@ -187,7 +191,8 @@ class _AuthScreenState extends State<AuthScreen> {
             SvgPicture.asset(
               'assets/images/logo.svg',
               height: 120,
-              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              colorFilter:
+                  const ColorFilter.mode(Colors.white, BlendMode.srcIn),
             ),
             const SizedBox(height: 24),
             if (_isLogin) const AnimatedSubtitle(),
@@ -201,8 +206,7 @@ class _AuthScreenState extends State<AuthScreen> {
     return Align(
       alignment: Alignment.bottomCenter,
       child: Container(
-        height:
-            MediaQuery.of(context).size.height * (_isLogin ? 0.60 : 0.65),
+        height: MediaQuery.of(context).size.height * (_isLogin ? 0.60 : 0.65),
         width: double.infinity,
         decoration: const BoxDecoration(
             color: Colors.white,
@@ -258,7 +262,7 @@ class _AuthScreenState extends State<AuthScreen> {
     );
   }
 
-    Widget _buildDivider() {
+  Widget _buildDivider() {
     return const Row(
       children: [
         Expanded(child: Divider()),

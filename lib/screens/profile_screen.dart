@@ -28,12 +28,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 24),
             ListTile(
-              title: const Text('Name', style: TextStyle(fontWeight: FontWeight.w500)),
+              title: const Text('Name',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
               subtitle: Text(user?.displayName ?? 'No Name'),
             ),
             const Divider(),
             ListTile(
-              title: const Text('Email', style: TextStyle(fontWeight: FontWeight.w500)),
+              title: const Text('Email',
+                  style: TextStyle(fontWeight: FontWeight.w500)),
               subtitle: Text(user?.email ?? 'No Email'),
             ),
             const SizedBox(height: 32),

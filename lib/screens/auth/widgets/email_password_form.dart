@@ -54,8 +54,10 @@ class EmailPasswordForm extends StatelessWidget {
             ),
           ),
           child: isLoading
-              ? const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
-              : const Text('Login', style: TextStyle(color: Colors.white, fontSize: 16)),
+              ? const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
+              : const Text('Login',
+                  style: TextStyle(color: Colors.white, fontSize: 16)),
         ),
       ],
     );
@@ -91,8 +93,10 @@ class EmailPasswordForm extends StatelessWidget {
             ),
           ),
           child: isLoading
-              ? const CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
-              : const Text('Sign Up', style: TextStyle(color: Colors.white, fontSize: 16)),
+              ? const CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white))
+              : const Text('Sign Up',
+                  style: TextStyle(color: Colors.white, fontSize: 16)),
         ),
       ],
     );

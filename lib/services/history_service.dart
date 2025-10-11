@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class HistoryService {
   static const _historyKey = 'reading_history';
 
-  static Future<void> add_to_history(String book, int chapter) async {
+  static Future<void> addToHistory(String book, int chapter) async {
     final prefs = await SharedPreferences.getInstance();
     final history = prefs.getStringList(_historyKey) ?? [];
     final entry = '$book $chapter';
@@ -20,7 +20,7 @@ class HistoryService {
     await prefs.setStringList(_historyKey, history);
   }
 
-  static Future<List<String>> get_history() async {
+  static Future<List<String>> getHistory() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getStringList(_historyKey) ?? [];
   }

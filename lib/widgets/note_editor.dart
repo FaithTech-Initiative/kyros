@@ -1,4 +1,3 @@
-
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -139,7 +138,8 @@ class _MoreOptionsSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Edited $formattedTime', style: const TextStyle(color: Colors.grey)),
+          Text('Edited $formattedTime',
+              style: const TextStyle(color: Colors.grey)),
           const SizedBox(height: 16),
           ListTile(
             leading: const Icon(Icons.delete_outline),

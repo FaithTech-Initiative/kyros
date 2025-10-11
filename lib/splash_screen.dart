@@ -46,7 +46,9 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SvgPicture.asset(
-              isDarkMode ? 'assets/images/logo_dark.svg' : 'assets/images/logo.svg',
+              isDarkMode
+                  ? 'assets/images/logo_dark.svg'
+                  : 'assets/images/logo.svg',
               height: 100,
             ),
             const SizedBox(height: 20),

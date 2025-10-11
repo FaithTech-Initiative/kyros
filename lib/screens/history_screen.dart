@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:kyros/screens/verse_screen.dart';
 import 'package:kyros/services/history_service.dart';
@@ -17,14 +16,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
   @override
   void initState() {
     super.initState();
-    _historyFuture = HistoryService.get_history();
+    _historyFuture = HistoryService.getHistory();
   }
 
   void _clearHistory() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('reading_history');
     setState(() {
-      _historyFuture = HistoryService.get_history();
+      _historyFuture = HistoryService.getHistory();
     });
   }
 
@@ -64,7 +63,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => VerseScreen(book: book, chapter: chapter),
+                        builder: (context) =>
+                            VerseScreen(book: book, chapter: chapter),
                       ),
                     );
                   },

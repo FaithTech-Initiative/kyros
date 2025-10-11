@@ -42,7 +42,9 @@ class MyApp extends StatelessWidget {
               ThemeData lightTheme;
               ThemeData darkTheme;
 
-              if (lightDynamic != null && darkDynamic != null && themeProvider.isDynamic) {
+              if (lightDynamic != null &&
+                  darkDynamic != null &&
+                  themeProvider.isDynamic) {
                 lightTheme = ThemeData(
                   useMaterial3: true,
                   colorScheme: lightDynamic,
@@ -65,8 +67,10 @@ class MyApp extends StatelessWidget {
                 home: StreamBuilder<User?>(
                   stream: FirebaseAuth.instance.authStateChanges(),
                   builder: (ctx, userSnapshot) {
-                    if (userSnapshot.connectionState == ConnectionState.waiting) {
-                      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+                    if (userSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return const Scaffold(
+                          body: Center(child: CircularProgressIndicator()));
                     }
                     if (userSnapshot.hasData) {
                       return const MainScreen();

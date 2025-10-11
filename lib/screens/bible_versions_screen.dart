@@ -45,7 +45,8 @@ class _BibleVersionsScreenState extends State<BibleVersionsScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to download $versionName: ${e.toString()}')),
+        SnackBar(
+            content: Text('Failed to download $versionName: ${e.toString()}')),
       );
     } finally {
       if (mounted) {
@@ -62,7 +63,8 @@ class _BibleVersionsScreenState extends State<BibleVersionsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Bible'),
-        content: Text('Are you sure you want to delete the $versionName version?'),
+        content:
+            Text('Are you sure you want to delete the $versionName version?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
@@ -88,7 +90,8 @@ class _BibleVersionsScreenState extends State<BibleVersionsScreen> {
       } catch (e) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete $versionName: ${e.toString()}')),
+          SnackBar(
+              content: Text('Failed to delete $versionName: ${e.toString()}')),
         );
       } finally {
         if (mounted) {
@@ -141,14 +144,16 @@ class _BibleVersionsScreenState extends State<BibleVersionsScreen> {
                     style: TextStyle(
                       color: isDownloaded
                           ? theme.colorScheme.primary
-                          : theme.colorScheme.onSurface.withAlpha((255 * 0.6).round()),
+                          : theme.colorScheme.onSurface
+                              .withAlpha((255 * 0.6).round()),
                     ),
                   ),
                   trailing: isDownloading
                       ? const CircularProgressIndicator()
                       : isDownloaded
                           ? IconButton(
-                              icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                              icon: const Icon(Icons.delete_outline,
+                                  color: Colors.redAccent),
                               onPressed: () => _deleteVersion(versionName),
                               tooltip: 'Delete',
                             )
