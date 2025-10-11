@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>896490665397-kdas4htf5duu3rqr3d4ol5osqv7fog4t.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.896490665397-kdas4htf5duu3rqr3d4ol5osqv7fog4t</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>896490665397-5b1annbcltanrdmbvoa87o89sa8fsb9l.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyCoEie2gkB_Hw3AY4j9dt28HzmMPrwh6ZE</string>
+	<key>GCM_SENDER_ID</key>
+	<string>896490665397</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.kyros</string>
+	<key>PROJECT_ID</key>
+	<string>kyrosapp-100f7</string>
+	<key>STORAGE_BUCKET</key>
+	<string>kyrosapp-100f7.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:896490665397:ios:4189532b31d76f912d55fc</string>
+</dict>
+</plist>

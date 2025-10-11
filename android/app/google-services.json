@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "896490665397-is7gq3u826fu1uli4kr4q1bcv4k50etj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.kyros",
+            "certificate_hash": "ff3a67b18ab6ad58f18983093adde2e47da92454"
+          }
+        },
+        {
           "client_id": "896490665397-bskppqcfmr2al75m6aq6g3h2ro9bck96.apps.googleusercontent.com",
           "client_type": 3
         }
