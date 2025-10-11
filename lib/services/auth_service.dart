@@ -1,6 +1,8 @@
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:kyros/firebase_options.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -61,6 +63,12 @@ class AuthService {
           AppleIDAuthorizationScopes.email,
           AppleIDAuthorizationScopes.fullName,
         ],
+        webAuthenticationOptions: WebAuthenticationOptions(
+          clientId: DefaultFirebaseOptions.currentPlatform.iosClientId!,
+          redirectUri: Uri.parse(
+            'https://kyrosapp-100f7.firebaseapp.com/__/auth/handler',
+          ),
+        ),
       );
       final oAuthProvider = OAuthProvider("apple.com");
       final authCredential = oAuthProvider.credential(

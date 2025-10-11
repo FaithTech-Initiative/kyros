@@ -25,8 +25,10 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isSearchActive = false;
   final String? userId = FirebaseAuth.instance.currentUser?.uid;
   List<Note> _notes = [];
+  List<Note> _filteredNotes = [];
   final DailyVerseService _dailyVerseService = DailyVerseService();
   Future<Map<String, String>>? _dailyVerseFuture;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -34,12 +36,20 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadNotes();
     _syncNotes();
     _dailyVerseFuture = _dailyVerseService.getDailyVerse();
+    _searchController.addListener(_filterNotes);
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   void _loadNotes() async {
     final notes = await DatabaseHelper.instance.readAllNotes();
     setState(() {
       _notes = notes.where((note) => !note.isDeleted).toList();
+      _filteredNotes = _notes;
     });
   }
 
@@ -90,6 +100,21 @@ class _HomeScreenState extends State<HomeScreen> {
   void _toggleSearch() {
     setState(() {
       _isSearchActive = !_isSearchActive;
+      if (!_isSearchActive) {
+        _searchController.clear();
+      }
+    });
+  }
+
+  void _filterNotes() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      _filteredNotes = _notes.where((note) {
+        final titleMatch = note.title.toLowerCase().contains(query);
+        final contentMatch = note.content.toLowerCase().contains(query);
+        final labelMatch = note.labels.any((label) => label.toLowerCase().contains(query));
+        return titleMatch || contentMatch || labelMatch;
+      }).toList();
     });
   }
 
@@ -134,8 +159,9 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
         title: _isSearchActive
-            ? const TextField(
-                decoration: InputDecoration(
+            ? TextField(
+                controller: _searchController,
+                decoration: const InputDecoration(
                   hintText: 'Search...',
                   border: InputBorder.none,
                 ),
@@ -149,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
         titleSpacing: 0,
         actions: [
           IconButton(
-            icon: Icon(Icons.search, color: iconColor),
+            icon: Icon(_isSearchActive ? Icons.close : Icons.search, color: iconColor),
             onPressed: _toggleSearch,
           ),
           GestureDetector(
@@ -245,7 +271,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: _notes.isEmpty
+              child: _filteredNotes.isEmpty
                   ? const Center(
                       child: Text(
                         'No notes yet. Tap the + button to add one!',
@@ -253,9 +279,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     )
                   : ListView.builder(
-                      itemCount: _notes.length,
+                      itemCount: _filteredNotes.length,
                       itemBuilder: (context, index) {
-                        final note = _notes[index];
+                        final note = _filteredNotes[index];
                         return Card(
                           elevation: 2,
                           margin: const EdgeInsets.symmetric(vertical: 8),
