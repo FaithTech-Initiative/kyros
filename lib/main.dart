@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -6,7 +5,6 @@ import 'package:kyros/app_theme.dart';
 import 'package:kyros/firebase_options.dart';
 import 'package:kyros/screens/auth_screen.dart';
 import 'package:kyros/screens/bible_versions_screen.dart';
-import 'package:kyros/screens/get_started_screen.dart';
 import 'package:kyros/screens/main_screen.dart';
 import 'package:kyros/services/bible_service.dart';
 import 'package:kyros/theme_provider.dart';
@@ -17,20 +15,6 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  // if (kDebugMode) {
-  //   await FirebaseAppCheck.instance.activate(
-  //     androidProvider: AndroidAppCheckProvider.debug,
-  //   );
-  //   FirebaseAppCheck.instance.onTokenChange.listen((token) {
-  //     if (token != null) {
-  //       // print("App Check debug token: $token");
-  //     }
-  //   });
-  // } else {
-  //   await FirebaseAppCheck.instance.activate(
-  //     androidProvider: AndroidAppCheckProvider.playIntegrity,
-  //   );
-  // }
 
   runApp(const MyApp());
 }
@@ -74,29 +58,10 @@ class MyApp extends StatelessWidget {
                 theme: lightTheme,
                 darkTheme: darkTheme,
                 themeMode: themeProvider.themeMode,
-                home: StreamBuilder<User?>(
-                  stream: FirebaseAuth.instance.authStateChanges(),
-                  builder: (ctx, userSnapshot) {
-                    if (userSnapshot.connectionState ==
-                        ConnectionState.waiting) {
-                      return const Scaffold(
-                          body: Center(child: CircularProgressIndicator()));
-                    }
-                    if (userSnapshot.hasData) {
-                      return const MainScreen();
-                    }
-                    return const GetStartedScreen();
-                  },
-                ),
+                home: const MainScreen(),
                 routes: {
                   '/auth': (context) => const AuthScreen(),
-                  '/home': (context) {
-                    final user = FirebaseAuth.instance.currentUser;
-                    if (user != null) {
-                      return const MainScreen();
-                    }
-                    return const AuthScreen();
-                  },
+                  '/home': (context) => const MainScreen(),
                   '/bible-versions': (context) => const BibleVersionsScreen(),
                 },
               );
