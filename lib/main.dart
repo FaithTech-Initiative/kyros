@@ -1,9 +1,6 @@
-
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dynamic_color/dynamic_color.dart';
-import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:kyros/app_theme.dart';
 import 'package:kyros/firebase_options.dart';
@@ -20,20 +17,20 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  if (kDebugMode) {
-    await FirebaseAppCheck.instance.activate(
-      androidProvider: AndroidProvider.debug,
-    );
-    FirebaseAppCheck.instance.onTokenChange.listen((token) {
-      if (token != null) {
-        // print("App Check debug token: $token");
-      }
-    });
-  } else {
-    await FirebaseAppCheck.instance.activate(
-      androidProvider: AndroidProvider.playIntegrity,
-    );
-  }
+  // if (kDebugMode) {
+  //   await FirebaseAppCheck.instance.activate(
+  //     androidProvider: AndroidAppCheckProvider.debug,
+  //   );
+  //   FirebaseAppCheck.instance.onTokenChange.listen((token) {
+  //     if (token != null) {
+  //       // print("App Check debug token: $token");
+  //     }
+  //   });
+  // } else {
+  //   await FirebaseAppCheck.instance.activate(
+  //     androidProvider: AndroidAppCheckProvider.playIntegrity,
+  //   );
+  // }
 
   runApp(const MyApp());
 }

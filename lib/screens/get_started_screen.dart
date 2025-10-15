@@ -70,7 +70,7 @@ class GetStartedScreenState extends State<GetStartedScreen> {
   }
 
   void _onGetStarted() {
-    Navigator.of(context).pushReplacementNamed('/auth');
+    Navigator.of(context).pushReplacementNamed('/home');
   }
 
   @override
