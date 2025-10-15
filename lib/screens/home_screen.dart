@@ -138,13 +138,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    if (userId == null || user == null) {
-      return const Scaffold(
-        body: Center(child: Text("User not logged in")),
-      );
-    }
-
     final appBarColor = Theme.of(context).appBarTheme.backgroundColor;
     final iconColor = Theme.of(context).appBarTheme.foregroundColor;
 
@@ -189,11 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             child: CircleAvatar(
               backgroundColor: iconColor,
-              backgroundImage:
-                  user.photoURL != null ? NetworkImage(user.photoURL!) : null,
-              child: user.photoURL == null
-                  ? Icon(Icons.person, color: appBarColor)
-                  : null,
+              child: Icon(Icons.person, color: appBarColor),
             ),
           ),
           const SizedBox(width: 16),
