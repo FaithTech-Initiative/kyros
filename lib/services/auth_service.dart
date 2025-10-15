@@ -6,7 +6,9 @@ import 'package:kyros/firebase_options.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    serverClientId: DefaultFirebaseOptions.currentPlatform.iosClientId,
+  );
 
   Future<User?> signInWithEmailAndPassword(
       String email, String password) async {
@@ -39,9 +41,13 @@ class AuthService {
 
   Future<User?> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        // The user canceled the sign-in
+        return null;
+      }
 
-      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
@@ -99,8 +105,4 @@ class AuthService {
       // It's possible that the user was not signed in with Google
     }
   }
-}
-
-extension on GoogleSignInAuthentication {
-  String? get accessToken => null;
 }
