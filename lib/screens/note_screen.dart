@@ -15,8 +15,6 @@ class NoteScreen extends StatefulWidget {
 class _NoteScreenState extends State<NoteScreen> {
   late TextEditingController _titleController;
   late TextEditingController _contentController;
-  late TextEditingController _labelsController;
-  List<String> _labels = [];
   bool _isArchived = false;
 
   @override
@@ -24,32 +22,14 @@ class _NoteScreenState extends State<NoteScreen> {
     super.initState();
     _titleController = TextEditingController(text: widget.note?.title ?? '');
     _contentController = TextEditingController(text: widget.note?.content ?? '');
-    _labels = widget.note?.labels ?? [];
     _isArchived = widget.note?.isArchived ?? false;
-    _labelsController = TextEditingController();
   }
 
   @override
   void dispose() {
     _titleController.dispose();
     _contentController.dispose();
-    _labelsController.dispose();
     super.dispose();
-  }
-
-  void _addLabel() {
-    if (_labelsController.text.isNotEmpty) {
-      setState(() {
-        _labels.add(_labelsController.text);
-        _labelsController.clear();
-      });
-    }
-  }
-
-  void _removeLabel(String label) {
-    setState(() {
-      _labels.remove(label);
-    });
   }
 
   void _saveNote() async {
@@ -63,7 +43,6 @@ class _NoteScreenState extends State<NoteScreen> {
         title: title,
         content: content,
         createdTime: widget.note?.createdTime ?? now,
-        labels: _labels,
         isArchived: _isArchived,
       );
 
@@ -110,33 +89,6 @@ class _NoteScreenState extends State<NoteScreen> {
     Navigator.of(context).pop();
   }
 
-  void _copyNote() async {
-    final title = _titleController.text;
-    final content = _contentController.text;
-
-    if (title.isNotEmpty || content.isNotEmpty) {
-      final now = DateTime.now();
-      final note = Note(
-        title: title,
-        content: content,
-        createdTime: now,
-        labels: _labels,
-        isArchived: _isArchived,
-      );
-      final createdNote = await DatabaseHelper.instance.create(note);
-      if (widget.userId != null) {
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(widget.userId)
-            .collection('notes')
-            .doc(createdNote.id.toString())
-            .set(createdNote.toMap());
-      }
-    }
-    if (!mounted) return;
-    Navigator.of(context).pop();
-  }
-
   void _toggleArchive() async {
     setState(() {
       _isArchived = !_isArchived;
@@ -155,96 +107,117 @@ class _NoteScreenState extends State<NoteScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.note == null ? 'New Note' : 'Edit Note'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: _saveNote,
-          ),
-          if (widget.note != null)
-            PopupMenuButton(
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'archive',
-                  child: Text(_isArchived ? 'Unarchive' : 'Archive'),
-                ),
-                const PopupMenuItem(
-                  value: 'copy',
-                  child: Text('Make a copy'),
-                ),
-                const PopupMenuItem(
-                  value: 'delete',
-                  child: Text('Delete'),
-                ),
-              ],
-              onSelected: (value) {
-                if (value == 'archive') {
-                  _toggleArchive();
-                } else if (value == 'copy') {
-                  _copyNote();
-                } else if (value == 'delete') {
-                  _deleteNote();
-                }
-              },
+ @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () {
+          _saveNote();
+        },
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.push_pin_outlined),
+          onPressed: () {},
+        ),
+        IconButton(
+          icon: const Icon(Icons.notifications_outlined),
+          onPressed: () {},
+        ),
+        IconButton(
+          icon: Icon(_isArchived ? Icons.unarchive_outlined : Icons.archive_outlined),
+          onPressed: _toggleArchive,
+        ),
+      ],
+    ),
+    body: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          TextField(
+            controller: _titleController,
+            decoration: const InputDecoration(
+              hintText: 'Title',
+              border: InputBorder.none,
             ),
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          Expanded(
+            child: TextField(
+              controller: _contentController,
+              decoration: const InputDecoration(
+                hintText: 'Note',
+                border: InputBorder.none,
+              ),
+              maxLines: null,
+            ),
+          ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _titleController,
-              decoration: const InputDecoration(
-                labelText: 'Title',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16.0),
-            Expanded(
-              child: TextField(
-                controller: _contentController,
-                decoration: const InputDecoration(
-                  labelText: 'Content',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: null,
-                expands: true,
-              ),
-            ),
-            const SizedBox(height: 16.0),
-            Wrap(
-              spacing: 8.0,
-              children: _labels
-                  .map((label) => Chip(
-                        label: Text(label),
-                        onDeleted: () => _removeLabel(label),
-                      ))
-                  .toList(),
-            ),
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _labelsController,
-                    decoration: const InputDecoration(
-                      labelText: 'Add a label',
-                    ),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: _addLabel,
-                ),
-              ],
-            ),
-          ],
-        ),
+    ),
+    floatingActionButton: FloatingActionButton(
+      onPressed: () {},
+      child: const Icon(Icons.mic_none),
+    ),
+    bottomNavigationBar: BottomAppBar(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.add_box_outlined),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.palette_outlined),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.text_fields),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.undo),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.redo),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                builder: (context) {
+                  return Wrap(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.delete_outline),
+                        title: const Text('Delete'),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          _deleteNote();
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.copy),
+                        title: const Text('Make a copy'),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          // _copyNote();
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
