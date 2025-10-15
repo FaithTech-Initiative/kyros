@@ -1,3 +1,4 @@
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +26,7 @@ void main() async {
     );
     FirebaseAppCheck.instance.onTokenChange.listen((token) {
       if (token != null) {
-        print("App Check debug token: $token");
+        // print("App Check debug token: $token");
       }
     });
   } else {
