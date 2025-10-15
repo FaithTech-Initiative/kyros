@@ -2,6 +2,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:kyros/firebase_options.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -9,10 +10,11 @@ class AuthService {
     serverClientId: DefaultFirebaseOptions.currentPlatform.iosClientId,
   );
 
-
-  Future<User?> signInWithEmailAndPassword(String email, String password) async {
+  Future<User?> signInWithEmailAndPassword(
+      String email, String password) async {
     try {
-      final UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+      final UserCredential userCredential =
+          await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -25,7 +27,8 @@ class AuthService {
   Future<User?> createUserWithEmailAndPassword(
       String email, String password, String name) async {
     try {
-      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      final UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
@@ -38,9 +41,13 @@ class AuthService {
 
   Future<User?> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        // The user canceled the sign-in
+        return null;
+      }
 
-      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
 
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
@@ -48,7 +55,7 @@ class AuthService {
       );
 
       final UserCredential userCredential =
-      await _auth.signInWithCredential(credential);
+          await _auth.signInWithCredential(credential);
       return userCredential.user;
     } catch (e) {
       rethrow;
@@ -62,6 +69,12 @@ class AuthService {
           AppleIDAuthorizationScopes.email,
           AppleIDAuthorizationScopes.fullName,
         ],
+        webAuthenticationOptions: WebAuthenticationOptions(
+          clientId: DefaultFirebaseOptions.currentPlatform.iosClientId!,
+          redirectUri: Uri.parse(
+            'https://kyrosapp-100f7.firebaseapp.com/__/auth/handler',
+          ),
+        ),
       );
       final oAuthProvider = OAuthProvider("apple.com");
       final authCredential = oAuthProvider.credential(
@@ -69,7 +82,7 @@ class AuthService {
         accessToken: credential.authorizationCode,
       );
       final UserCredential userCredential =
-      await _auth.signInWithCredential(authCredential);
+          await _auth.signInWithCredential(authCredential);
       return userCredential.user;
     } catch (e) {
       rethrow;
@@ -92,8 +105,4 @@ class AuthService {
       // It's possible that the user was not signed in with Google
     }
   }
-}
-
-extension on GoogleSignInAuthentication {
-  String? get accessToken => null;
 }
