@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kyros/data/bible_data.dart';
+import 'package:kyros/services/database_helper.dart';
 import 'package:kyros/screens/chapter_selection_screen.dart';
 import 'package:kyros/screens/versions_screen.dart';
 import 'package:kyros/screens/history_screen.dart';
@@ -13,13 +13,22 @@ class BibleReferencesScreen extends StatefulWidget {
 
 class _BibleReferencesScreenState extends State<BibleReferencesScreen> {
   String _searchText = '';
+  late Future<List<String>> _booksFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _booksFuture = _getBooks();
+  }
+
+  Future<List<String>> _getBooks() async {
+    final dbHelper = DatabaseHelper.instance;
+    final books = await dbHelper.getBooks('KJV');
+    return books.map((bookMap) => bookMap[DatabaseHelper.columnBook] as String).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final filteredBooks = bibleBooks.keys.where((book) {
-      return book.toLowerCase().contains(_searchText.toLowerCase());
-    }).toList();
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('References'),
@@ -68,24 +77,41 @@ class _BibleReferencesScreenState extends State<BibleReferencesScreen> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: filteredBooks.length,
-              itemBuilder: (context, index) {
-                final book = filteredBooks[index];
-                return ListTile(
-                  title: Text(book),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ChapterSelectionScreen(
-                          book: book,
-                          chapterCount: bibleBooks[book]!,
-                        ),
-                      ),
-                    );
-                  },
-                );
+            child: FutureBuilder<List<String>>(
+              future: _booksFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else {
+                  final allBooks = snapshot.data ?? [];
+                  final filteredBooks = allBooks.where((book) {
+                    return book.toLowerCase().contains(_searchText.toLowerCase());
+                  }).toList();
+                  return ListView.builder(
+                    itemCount: filteredBooks.length,
+                    itemBuilder: (context, index) {
+                      final book = filteredBooks[index];
+                      return ListTile(
+                        title: Text(book),
+                        onTap: () async {
+                          final dbHelper = DatabaseHelper.instance;
+                          final chapterCount = await dbHelper.getChapterCount('KJV', book);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChapterSelectionScreen(
+                                book: book,
+                                chapterCount: chapterCount,
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  );
+                }
               },
             ),
           ),

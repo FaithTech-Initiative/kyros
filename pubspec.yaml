@@ -1,6 +1,6 @@
 name: kyros
 description: "A new Flutter project."
-publish_to: 'none' 
+publish_to: 'none'
 version: 1.0.0+1
 
 environment:
@@ -62,3 +62,4 @@ flutter:
     - assets/images/icon_dark.png
     - assets/images/logo.svg
     - assets/images/logo_dark.svg
+    - assets/translations/KJV.json

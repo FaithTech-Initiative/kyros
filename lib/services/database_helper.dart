@@ -1,152 +1,89 @@
 import 'dart:convert';
-
-import 'package:kyros/models/note.dart';
-import 'package:path/path.dart';
+import 'package:flutter/services.dart';
 import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
 
 class DatabaseHelper {
-  static final DatabaseHelper instance = DatabaseHelper._init();
+  static const _databaseName = "Bible.db";
+  static const _databaseVersion = 1;
+
+  static const table = 'verses';
+
+  static const columnId = '_id';
+  static const columnBook = 'book';
+  static const columnChapter = 'chapter';
+  static const columnVerse = 'verse';
+  static const columnText = 'text';
+  static const columnTranslation = 'translation';
+
+  DatabaseHelper._privateConstructor();
+  static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
+
   static Database? _database;
-
-  DatabaseHelper._init();
-
   Future<Database> get database async {
     if (_database != null) return _database!;
-
-    _database = await _initDB('notes.db');
+    _database = await _initDatabase();
     return _database!;
   }
 
-  Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
-
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+  _initDatabase() async {
+    String path = join(await getDatabasesPath(), _databaseName);
+    return await openDatabase(path,
+        version: _databaseVersion, onCreate: _onCreate);
   }
 
-  Future _createDB(Database db, int version) async {
-    const idType = 'INTEGER PRIMARY KEY AUTOINCREMENT';
-    const textType = 'TEXT NOT NULL';
-    const boolType = 'INTEGER NOT NULL';
-
+  Future _onCreate(Database db, int version) async {
     await db.execute('''
-CREATE TABLE notes (
-  id $idType,
-  title $textType,
-  content $textType,
-  createdTime $textType,
-  labels $textType,
-  isArchived $boolType,
-  isDeleted $boolType,
-  imageUrls $textType,
-  audioUrls $textType
-)
-''');
+          CREATE TABLE $table (
+            $columnId INTEGER PRIMARY KEY AUTOINCREMENT,
+            $columnBook TEXT NOT NULL,
+            $columnChapter INTEGER NOT NULL,
+            $columnVerse INTEGER NOT NULL,
+            $columnText TEXT NOT NULL,
+            $columnTranslation TEXT NOT NULL
+          )
+          ''');
+    await _loadBibleData(db, 'KJV');
   }
 
-  Future<Note> create(Note note) async {
-    final db = await instance.database;
-    final id = await db.insert('notes', {
-      'title': note.title,
-      'content': note.content,
-      'createdTime': note.createdTime.toIso8601String(),
-      'labels': jsonEncode(note.labels),
-      'isArchived': note.isArchived ? 1 : 0,
-      'isDeleted': note.isDeleted ? 1 : 0,
-      'imageUrls': jsonEncode(note.imageUrls),
-      'audioUrls': jsonEncode(note.audioUrls),
-    });
-    return note.copy(id: id);
-  }
+  Future<void> _loadBibleData(Database db, String translation) async {
+    String jsonString = await rootBundle.loadString('assets/translations/$translation.json');
+    Map<String, dynamic> jsonResult = json.decode(jsonString);
 
-  Future<Note> readNote(int id) async {
-    final db = await instance.database;
-
-    final maps = await db.query(
-      'notes',
-      columns: [
-        'id',
-        'title',
-        'content',
-        'createdTime',
-        'labels',
-        'isArchived',
-        'isDeleted',
-        'imageUrls',
-        'audioUrls'
-      ],
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-
-    if (maps.isNotEmpty) {
-      final map = maps.first;
-      return Note(
-        id: map['id'] as int?,
-        title: map['title'] as String,
-        content: map['content'] as String,
-        createdTime: DateTime.parse(map['createdTime'] as String),
-        labels: jsonDecode(map['labels'] as String).cast<String>(),
-        isArchived: map['isArchived'] == 1,
-        isDeleted: map['isDeleted'] == 1,
-        imageUrls: jsonDecode(map['imageUrls'] as String).cast<String>(),
-        audioUrls: jsonDecode(map['audioUrls'] as String).cast<String>(),
-      );
-    } else {
-      throw Exception('ID $id not found');
+    for (String book in jsonResult.keys) {
+      Map<String, dynamic> chapters = jsonResult[book];
+      for (String chapter in chapters.keys) {
+        Map<String, dynamic> verses = chapters[chapter];
+        for (String verse in verses.keys) {
+          String text = verses[verse];
+          await db.insert(table, {
+            columnBook: book,
+            columnChapter: int.parse(chapter),
+            columnVerse: int.parse(verse),
+            columnText: text,
+            columnTranslation: translation,
+          });
+        }
+      }
     }
   }
 
-  Future<List<Note>> readAllNotes() async {
-    final db = await instance.database;
-    final result = await db.query('notes');
-    return result.map((map) {
-      return Note(
-        id: map['id'] as int?,
-        title: map['title'] as String,
-        content: map['content'] as String,
-        createdTime: DateTime.parse(map['createdTime'] as String),
-        labels: jsonDecode(map['labels'] as String).cast<String>(),
-        isArchived: map['isArchived'] == 1,
-        isDeleted: map['isDeleted'] == 1,
-        imageUrls: jsonDecode(map['imageUrls'] as String).cast<String>(),
-        audioUrls: jsonDecode(map['audioUrls'] as String).cast<String>(),
-      );
-    }).toList();
+  Future<List<Map<String, dynamic>>> getBooks(String translation) async {
+    Database db = await instance.database;
+    return await db.rawQuery('SELECT DISTINCT $columnBook FROM $table WHERE $columnTranslation = ?', [translation]);
   }
 
-  Future<int> update(Note note) async {
-    final db = await instance.database;
-
-    return db.update(
-      'notes',
-      {
-        'title': note.title,
-        'content': note.content,
-        'createdTime': note.createdTime.toIso8601String(),
-        'labels': jsonEncode(note.labels),
-        'isArchived': note.isArchived ? 1 : 0,
-        'isDeleted': note.isDeleted ? 1 : 0,
-        'imageUrls': jsonEncode(note.imageUrls),
-        'audioUrls': jsonEncode(note.audioUrls),
-      },
-      where: 'id = ?',
-      whereArgs: [note.id],
-    );
+  Future<int> getChapterCount(String translation, String book) async {
+    Database db = await instance.database;
+    final result = await db.rawQuery(
+        'SELECT COUNT(DISTINCT $columnChapter) as chapterCount FROM $table WHERE $columnTranslation = ? AND $columnBook = ?', [translation, book]);
+    return Sqflite.firstIntValue(result) ?? 0;
   }
 
-  Future<int> delete(int id) async {
-    final db = await instance.database;
-
-    return await db.delete(
-      'notes',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future close() async {
-    final db = await instance.database;
-    db.close();
+  Future<List<Map<String, dynamic>>> getVerses(String translation, String book, int chapter) async {
+    Database db = await instance.database;
+    return await db.query(table,
+        where: '$columnTranslation = ? AND $columnBook = ? AND $columnChapter = ?',
+        whereArgs: [translation, book, chapter]);
   }
 }

@@ -209,6 +209,38 @@ Widget build(BuildContext context) {
                           // _copyNote();
                         },
                       ),
+                      ListTile(
+                        leading: const Icon(Icons.send),
+                        title: const Text('Send'),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          // _sendNote();
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.person_add_outlined),
+                        title: const Text('Collaborator'),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          // _addCollaborator();
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.label_outline),
+                        title: const Text('Labels'),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          // _manageLabels();
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.help_outline),
+                        title: const Text('Help & feedback'),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          // _showHelp();
+                        },
+                      ),
                     ],
                   );
                 },
