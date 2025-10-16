@@ -26,7 +26,7 @@ class DatabaseHelper {
     return _database!;
   }
 
-  _initDatabase() async {
+  Future<Database> _initDatabase() async {
     String path = join(await getDatabasesPath(), _databaseName);
     return await openDatabase(path,
         version: _databaseVersion, onCreate: _onCreate);
@@ -43,11 +43,23 @@ class DatabaseHelper {
             $columnTranslation TEXT NOT NULL
           )
           ''');
-    await _loadBibleData(db, 'KJV');
+    await _loadBibleData(db, 'kjv');
   }
 
   Future<void> _loadBibleData(Database db, String translation) async {
-    String jsonString = await rootBundle.loadString('assets/translations/$translation.json');
+    final manifestContent = await rootBundle.loadString('AssetManifest.json');
+    final Map<String, dynamic> manifestMap = json.decode(manifestContent);
+
+    final translationKey = manifestMap.keys.firstWhere(
+      (String key) => key.contains('$translation.json'),
+      orElse: () => '',
+    );
+
+    if (translationKey.isEmpty) {
+      return;
+    }
+
+    String jsonString = await rootBundle.loadString(translationKey);
     Map<String, dynamic> jsonResult = json.decode(jsonString);
 
     for (String book in jsonResult.keys) {
@@ -68,6 +80,15 @@ class DatabaseHelper {
     }
   }
 
+  Future<List<String>> getAvailableTranslations() async {
+    final manifestContent = await rootBundle.loadString('AssetManifest.json');
+    final Map<String, dynamic> manifestMap = json.decode(manifestContent);
+    final paths = manifestMap.keys
+        .where((String key) => key.contains('assets/translations/EN-English/'))
+        .toList();
+    return paths.map((path) => path.split('/').last.replaceAll('.json', '')).toList();
+  }
+
   Future<List<Map<String, dynamic>>> getBooks(String translation) async {
     Database db = await instance.database;
     return await db.rawQuery('SELECT DISTINCT $columnBook FROM $table WHERE $columnTranslation = ?', [translation]);
@@ -85,5 +106,13 @@ class DatabaseHelper {
     return await db.query(table,
         where: '$columnTranslation = ? AND $columnBook = ? AND $columnChapter = ?',
         whereArgs: [translation, book, chapter]);
+  }
+
+  Future<void> loadNewTranslation(String translation) async {
+    Database db = await instance.database;
+    final existing = await db.query(table, where: '$columnTranslation = ?', whereArgs: [translation], limit: 1);
+    if (existing.isEmpty) {
+      await _loadBibleData(db, translation);
+    }
   }
 }

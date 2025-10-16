@@ -96,10 +96,11 @@ class _BibleReferencesScreenState extends State<BibleReferencesScreen> {
                       return ListTile(
                         title: Text(book),
                         onTap: () async {
+                          final navigator = Navigator.of(context);
                           final dbHelper = DatabaseHelper.instance;
                           final chapterCount = await dbHelper.getChapterCount('KJV', book);
-                          Navigator.push(
-                            context,
+                          if (!mounted) return;
+                          navigator.push(
                             MaterialPageRoute(
                               builder: (context) => ChapterSelectionScreen(
                                 book: book,

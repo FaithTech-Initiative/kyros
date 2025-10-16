@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:kyros/models/note.dart';
-import 'package:kyros/services/database_helper.dart';
+import 'package:kyros/services/notes_database_helper.dart';
 
 class NoteScreen extends StatefulWidget {
   final Note? note;
@@ -47,7 +47,7 @@ class _NoteScreenState extends State<NoteScreen> {
       );
 
       if (widget.note == null) {
-        final createdNote = await DatabaseHelper.instance.create(note);
+        final createdNote = await NotesDatabaseHelper.instance.create(note);
         if (widget.userId != null) {
           await FirebaseFirestore.instance
               .collection('users')
@@ -57,7 +57,7 @@ class _NoteScreenState extends State<NoteScreen> {
               .set(createdNote.toMap());
         }
       } else {
-        await DatabaseHelper.instance.update(note);
+        await NotesDatabaseHelper.instance.update(note);
         if (widget.userId != null) {
           await FirebaseFirestore.instance
               .collection('users')
@@ -75,7 +75,7 @@ class _NoteScreenState extends State<NoteScreen> {
   void _deleteNote() async {
     if (widget.note != null) {
       final updatedNote = widget.note!.copy(isDeleted: true);
-      await DatabaseHelper.instance.update(updatedNote);
+      await NotesDatabaseHelper.instance.update(updatedNote);
       if (widget.userId != null) {
         await FirebaseFirestore.instance
             .collection('users')
@@ -95,7 +95,7 @@ class _NoteScreenState extends State<NoteScreen> {
     });
     if (widget.note != null) {
       final updatedNote = widget.note!.copy(isArchived: _isArchived);
-      await DatabaseHelper.instance.update(updatedNote);
+      await NotesDatabaseHelper.instance.update(updatedNote);
       if (widget.userId != null) {
         await FirebaseFirestore.instance
             .collection('users')

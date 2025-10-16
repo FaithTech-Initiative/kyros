@@ -9,7 +9,7 @@ import 'package:kyros/screens/image_screen.dart';
 import 'package:kyros/screens/note_screen.dart';
 import 'package:kyros/screens/profile_screen.dart';
 import 'package:kyros/services/daily_verse_service.dart';
-import 'package:kyros/services/database_helper.dart';
+import 'package:kyros/services/notes_database_helper.dart';
 import 'package:kyros/widgets/app_drawer.dart';
 import 'package:kyros/widgets/expanding_fab.dart';
 
@@ -46,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _loadNotes() async {
-    final notes = await DatabaseHelper.instance.readAllNotes();
+    final notes = await NotesDatabaseHelper.instance.readAllNotes();
     setState(() {
       _notes = notes.where((note) => !note.isDeleted).toList();
       _filteredNotes = _notes;
@@ -62,13 +62,13 @@ class _HomeScreenState extends State<HomeScreen> {
           .get();
 
       final remoteNotes = querySnapshot.docs.map((doc) => Note.fromMap(doc.data())).toList();
-      final localNotes = await DatabaseHelper.instance.readAllNotes();
+      final localNotes = await NotesDatabaseHelper.instance.readAllNotes();
 
       for (final remoteNote in remoteNotes) {
         try {
-          final localNote = await DatabaseHelper.instance.readNote(remoteNote.id!);
+          final localNote = await NotesDatabaseHelper.instance.readNote(remoteNote.id!);
           if (localNote.createdTime.isBefore(remoteNote.createdTime)) {
-            await DatabaseHelper.instance.update(remoteNote);
+            await NotesDatabaseHelper.instance.update(remoteNote);
           } else if (localNote.createdTime.isAfter(remoteNote.createdTime)) {
             await FirebaseFirestore.instance
                 .collection('users')
@@ -78,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 .set(localNote.toMap());
           }
         } catch (e) {
-          await DatabaseHelper.instance.create(remoteNote);
+          await NotesDatabaseHelper.instance.create(remoteNote);
         }
       }
 

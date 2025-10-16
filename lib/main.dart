@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
                 routes: {
                   '/auth': (context) => const AuthScreen(),
                   '/home': (context) => const MainScreen(),
-                  '/bible-versions': (context) => const BibleVersionsScreen(),
+                  '/bible-versions': (context) => BibleVersionsScreen(),
                 },
               );
             },
