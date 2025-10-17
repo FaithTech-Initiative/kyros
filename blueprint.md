@@ -1,60 +1,70 @@
-# Kyros App Blueprint
+# Kyros Bible App Blueprint
 
 ## Overview
 
-This document outlines the features and implementation plan for the Kyros Bible study app.
+This document outlines the architecture, features, and development plan for the Kyros Bible App. The goal is to create a beautiful, performant, and easy-to-use mobile application for reading and studying the Bible.
 
-## Implemented Features
+The application will now leverage Firebase Firestore to store and manage Bible versions, allowing for a scalable and dynamic content delivery system.
 
-*   **Bible Reader:**
-    *   Browse and read different Bible versions.
-    *   Download Bible versions for offline access.
-    *   Search for verses within a chapter.
-    *   Listen to the audio of a chapter.
-*   **Reading History:**
-    *   Keeps track of the user's reading history.
-*   **My Wiki:**
-    *   A personal wiki for taking notes and creating study guides.
+## Style, Design, and Features
 
-## Current Plan: New Features
+### Core Features
+*   **Bible Reading:** Clean and readable interface for browsing books, chapters, and verses.
+*   **Version Management:** Users can browse available Bible translations and download them for offline access.
+*   **Search:** Full-text search within the selected Bible version.
+*   **History:** Keeps track of recently viewed chapters.
+*   **User Authentication:** (Future) Allow users to sign in to sync notes, bookmarks, and highlights.
+*   **Notes & Highlighting:** (Future) Tools for users to interact with the text.
 
-Here is the plan to implement the new features you requested:
+### Data & Backend (New)
+*   **Primary Database:** Firebase Firestore.
+*   **Data Structure:**
+    *   `versions` (Collection): Stores metadata for each available Bible translation.
+        *   *Document ID:* `KJV`, `ASV`, etc.
+        *   *Fields:* `name: "King James Version"`, `language: "en"`, `year: 1611`.
+    *   `bibles` (Collection): Contains the actual text content for each version.
+        *   *Document ID:* `KJV`, `ASV`, etc.
+        *   *Sub-collection:* `books`
+            *   *Document ID:* `Genesis`, `Exodus`, etc.
+            *   *Fields:* A map of chapters, where each chapter contains a list of verse objects.
+                ```json
+                {
+                  "1": [
+                    { "verse": 1, "text": "In the beginning..." },
+                    { "verse": 2, "text": "..." }
+                  ],
+                  "2": [ ... ]
+                }
+                ```
+*   **Offline Storage:** A local SQLite database on the device to store downloaded Bible versions for offline reading.
 
-### 1. Daily Verse
+### UI/UX
+*   **Theme:** Material 3 design with support for both light and dark modes.
+*   **Typography:** Clean, readable fonts.
+*   **Navigation:** Intuitive navigation between the main library, reader view, and settings.
 
-*   **Daily Verse Screen:**
-    *   Create a new screen to display the daily verse.
-    *   Fetch the daily verse from the `https://beta.ourmanna.com/api/v1/get?format=json&order=random` API.
-*   **Home Screen Integration:**
-    *   Display the daily verse prominently on the home screen.
+## Current Plan: Firestore Integration
 
-### 2. Prayer Journal & Notebook
+**Objective:** Migrate Bible content storage from local assets and external zip files to Firebase Firestore.
 
-*   **Unified Notes System:**
-    *   Implement a single, robust notes system to handle both the prayer journal and the notebook.
-*   **Note Model:**
-    *   Create a `Note` model with the following attributes: `id`, `title`, `content`, `date`, and `labels`.
-*   **Database:**
-    *   Set up a local SQLite database to store all notes, ensuring offline access and fast performance.
-*   **Note Screens:**
-    *   `NotesScreen`: A screen to display a list of all notes.
-    *   `NoteEditorScreen`: A screen with a rich text editor for creating and editing notes.
-*   **Note Actions:**
-    *   Implement full CRUD (Create, Read, Update, Delete) functionality.
-    *   Add the ability to "make a copy" of a note.
-*   **Labels:**
-    *   Allow users to add and manage labels for notes, making it easy to organize and filter them.
+**Steps:**
 
-### 3. Concordance
+1.  **[In Progress] Setup Firebase:**
+    *   Add `firebase_core` and `cloud_firestore` dependencies.
+    *   Guide the user to configure their project with `flutterfire configure`.
+    *   Initialize Firebase in `lib/main.dart`.
 
-*   **Concordance Screen:**
-    *   Create a new screen that allows users to search for words and see all the verses where they appear.
-*   **Search Index:**
-    *   Parse the downloaded Bible versions to create a search index for fast and efficient searching.
+2.  **[Pending] Data Migration:**
+    *   Create a one-time Dart script (`tool/upload_bibles.dart`).
+    *   This script will read all JSON files from the `assets/translations` directory.
+    *   It will parse and transform the data to fit the new Firestore structure.
+    *   It will then upload all versions, books, and verses to Firestore.
 
-### 4. Search Language Selection
+3.  **[Pending] Refactor Services:**
+    *   Create a new `FirestoreService` to handle all communication with Firestore (fetching version lists, downloading book content).
+    *   Modify `DatabaseHelper` to use `FirestoreService` as its data source for creating and updating the local SQLite database.
+    *   Remove the old logic for downloading and unzipping files via HTTP.
 
-*   **Language Setting:**
-    *   Add a setting to allow users to select their preferred language for Bible searches.
-*   **Integration:**
-    *   Use the selected language in both the concordance and the verse search.
+4.  **[Pending] Update UI:**
+    *   Update `BibleVersionsScreen` to fetch the list of available translations from the `versions` collection in Firestore.
+    *   Ensure the "Download" button correctly triggers the new Firestore -> SQLite data flow.
