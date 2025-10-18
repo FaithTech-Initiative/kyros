@@ -75,8 +75,11 @@ class _VersionsScreenState extends State<VersionsScreen> {
           ),
         ],
       ),
-      body: FutureBuilder<Map<String, bool>>(
-        future: _downloadStatus,
+      body: FutureBuilder<List<dynamic>>(
+        future: Future.wait([
+          _bibleService.getAvailableVersions(),
+          _downloadStatus,
+        ]),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -90,8 +93,9 @@ class _VersionsScreenState extends State<VersionsScreen> {
             return const Center(child: Text('No versions found'));
           }
 
-          final statuses = snapshot.data!;
-          final versions = _bibleService.getAvailableVersions();
+          final versions = snapshot.data![0] as List<String>;
+          final statuses = snapshot.data![1] as Map<String, bool>;
+
           final downloaded =
               versions.where((v) => statuses[v] == true).toList();
           final available =

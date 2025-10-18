@@ -3,29 +3,31 @@ import 'dart:io';
 import 'dart:developer' as developer;
 
 import 'package:archive/archive.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class BibleService {
-  final String _baseUrl = 'https://www.biblesupersearch.com/download/';
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  final List<String> _availableVersions = [
-    'bbe', // Bible in Basic English
-    'kjv', // King James Version
-    'web', // World English Bible
-    'oeb-us', // Open English Bible (US)
-  ];
-
-  List<String> getAvailableVersions() {
-    return _availableVersions;
+  Future<List<String>> getAvailableVersions() async {
+    try {
+      final snapshot = await _firestore.collection('bibleVersions').get();
+      return snapshot.docs.map((doc) => doc.id).toList();
+    } catch (e) {
+      developer.log('Error getting available versions',
+          name: 'bible.service', error: e);
+      return [];
+    }
   }
 
   Future<Map<String, bool>> getDownloadedVersionsStatus() async {
     final directory = await getApplicationDocumentsDirectory();
     final path = directory.path;
     Map<String, bool> status = {};
-    for (var version in _availableVersions) {
+    final versions = await getAvailableVersions();
+    for (var version in versions) {
       final file = File('$path/$version.json');
       status[version] = await file.exists();
     }
@@ -76,7 +78,8 @@ class BibleService {
     // Find the book in the downloaded JSON
     int bookIndex = -1;
     for (int i = 0; i < bibleData.length; i++) {
-      if (bibleData[i]['name'].toString().toLowerCase() == bookName.toLowerCase()) {
+      if (bibleData[i]['name'].toString().toLowerCase() ==
+          bookName.toLowerCase()) {
         bookIndex = i;
         break;
       }
@@ -109,7 +112,8 @@ class BibleService {
   }
 
   Map<String, dynamic>? _parseReference(String reference) {
-    final regex = RegExp(r'^(\d?\s?[a-zA-Z]+(?:\s[a-zA-Z]+)?)\s(\d+):(\d+)$');
+    final regex =
+        RegExp(r'^(\d?\s?[a-zA-Z]+(?:\s[a-zA-Z]+)?)\s(\d+):(\d+)$');
     final match = regex.firstMatch(reference);
     if (match != null) {
       return {
@@ -131,7 +135,10 @@ class BibleService {
       final bibleFile = File('$path/$versionName.json');
 
       try {
-        final response = await http.get(Uri.parse('$_baseUrl$versionName.zip'));
+        final doc =
+            await _firestore.collection('bibleVersions').doc(versionName).get();
+        final url = doc.data()!['url'];
+        final response = await http.get(Uri.parse(url));
         if (response.statusCode == 200) {
           await zipFile.writeAsBytes(response.bodyBytes);
 

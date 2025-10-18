@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:kyros/models/note.dart';
+import 'package:kyros/screens/bible_search_screen.dart';
 import 'package:kyros/services/notes_database_helper.dart';
 
 class NoteScreen extends StatefulWidget {
@@ -107,149 +108,168 @@ class _NoteScreenState extends State<NoteScreen> {
     }
   }
 
- @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () {
-          _saveNote();
-        },
-      ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.push_pin_outlined),
-          onPressed: () {},
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            _saveNote();
+          },
         ),
-        IconButton(
-          icon: const Icon(Icons.notifications_outlined),
-          onPressed: () {},
-        ),
-        IconButton(
-          icon: Icon(_isArchived ? Icons.unarchive_outlined : Icons.archive_outlined),
-          onPressed: _toggleArchive,
-        ),
-      ],
-    ),
-    body: Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          TextField(
-            controller: _titleController,
-            decoration: const InputDecoration(
-              hintText: 'Title',
-              border: InputBorder.none,
-            ),
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.push_pin_outlined),
+            onPressed: () {},
           ),
-          Expanded(
-            child: TextField(
-              controller: _contentController,
-              decoration: const InputDecoration(
-                hintText: 'Note',
-                border: InputBorder.none,
-              ),
-              maxLines: null,
-            ),
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: Icon(_isArchived ? Icons.unarchive_outlined : Icons.archive_outlined),
+            onPressed: _toggleArchive,
           ),
         ],
       ),
-    ),
-    floatingActionButton: FloatingActionButton(
-      onPressed: () {},
-      child: const Icon(Icons.mic_none),
-    ),
-    bottomNavigationBar: BottomAppBar(
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _titleController,
+              decoration: const InputDecoration(
+                hintText: 'Title',
+                border: InputBorder.none,
+              ),
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            Expanded(
+              child: TextField(
+                controller: _contentController,
+                decoration: const InputDecoration(
+                  hintText: 'Note',
+                  border: InputBorder.none,
+                ),
+                maxLines: null,
+              ),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            icon: const Icon(Icons.add_box_outlined),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.palette_outlined),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.text_fields),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.undo),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.redo),
-            onPressed: () {},
-          ),
-          IconButton(
-            icon: const Icon(Icons.more_vert),
+          FloatingActionButton(
             onPressed: () {
               showModalBottomSheet(
                 context: context,
-                builder: (context) {
-                  return Wrap(
-                    children: [
-                      ListTile(
-                        leading: const Icon(Icons.delete_outline),
-                        title: const Text('Delete'),
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          _deleteNote();
-                        },
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.copy),
-                        title: const Text('Make a copy'),
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          // _copyNote();
-                        },
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.send),
-                        title: const Text('Send'),
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          // _sendNote();
-                        },
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.person_add_outlined),
-                        title: const Text('Collaborator'),
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          // _addCollaborator();
-                        },
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.label_outline),
-                        title: const Text('Labels'),
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          // _manageLabels();
-                        },
-                      ),
-                      ListTile(
-                        leading: const Icon(Icons.help_outline),
-                        title: const Text('Help & feedback'),
-                        onTap: () {
-                          Navigator.of(context).pop();
-                          // _showHelp();
-                        },
-                      ),
-                    ],
-                  );
-                },
+                isScrollControlled: true,
+                builder: (context) => DraggableScrollableSheet(
+                  expand: false,
+                  builder: (context, scrollController) => BibleSearchScreen(),
+                ),
               );
             },
+            child: const Icon(Icons.search),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            onPressed: () {},
+            child: const Icon(Icons.mic_none),
           ),
         ],
       ),
-    ),
-  );
-}
+      bottomNavigationBar: BottomAppBar(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.add_box_outlined),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: const Icon(Icons.palette_outlined),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: const Icon(Icons.text_fields),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: const Icon(Icons.undo),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: const Icon(Icons.redo),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () {
+                showModalBottomSheet(
+                  context: context,
+                  builder: (context) {
+                    return Wrap(
+                      children: [
+                        ListTile(
+                          leading: const Icon(Icons.delete_outline),
+                          title: const Text('Delete'),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            _deleteNote();
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.copy),
+                          title: const Text('Make a copy'),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            // _copyNote();
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.send),
+                          title: const Text('Send'),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            // _sendNote();
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.person_add_outlined),
+                          title: const Text('Collaborator'),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            // _addCollaborator();
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.label_outline),
+                          title: const Text('Labels'),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            // _manageLabels();
+                          },
+                        ),
+                        ListTile(
+                          leading: const Icon(Icons.help_outline),
+                          title: const Text('Help & feedback'),
+                          onTap: () {
+                            Navigator.of(context).pop();
+                            // _showHelp();
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
