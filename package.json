@@ -1,0 +1,13 @@
+{
+  "name": "firestore-uploader",
+  "version": "1.0.0",
+  "description": "A script to upload bible data to Firestore.",
+  "main": "tool/upload_bibles.js",
+  "scripts": {
+    "upload": "node tool/upload_bibles.js",
+    "upload:bibles": "node tool/upload_bibles.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^11.0.0"
+  }
+}
