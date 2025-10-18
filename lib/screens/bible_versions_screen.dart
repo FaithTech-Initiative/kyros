@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kyros/services/database_helper.dart';
+import 'package:kyros/services/firestore_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BibleVersionsScreen extends StatefulWidget {
@@ -10,7 +11,8 @@ class BibleVersionsScreen extends StatefulWidget {
 }
 
 class BibleVersionsScreenState extends State<BibleVersionsScreen> {
-  late Future<List<String>> _availableTranslationsFuture;
+  final FirestoreService _firestoreService = FirestoreService();
+  late Future<List<Map<String, dynamic>>> _availableTranslationsFuture;
   final Set<String> _downloadedTranslations = {};
   String? _activeTranslation;
   final Map<String, bool> _downloading = {};
@@ -18,18 +20,13 @@ class BibleVersionsScreenState extends State<BibleVersionsScreen> {
   @override
   void initState() {
     super.initState();
-    _availableTranslationsFuture = _getAvailableTranslations();
+    _availableTranslationsFuture = _firestoreService.getAvailableTranslations();
     _loadDownloadedTranslations();
     _loadActiveTranslation();
   }
 
-  Future<List<String>> _getAvailableTranslations() async {
-    return await DatabaseHelper.instance.getAvailableTranslations();
-  }
-
   Future<void> _loadDownloadedTranslations() async {
-    final prefs = await SharedPreferences.getInstance();
-    final downloaded = prefs.getStringList('downloaded_translations') ?? [];
+    final downloaded = await DatabaseHelper.instance.getAvailableTranslations();
     setState(() {
       _downloadedTranslations.addAll(downloaded);
     });
@@ -38,7 +35,7 @@ class BibleVersionsScreenState extends State<BibleVersionsScreen> {
   Future<void> _loadActiveTranslation() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _activeTranslation = prefs.getString('active_translation') ?? 'kjv';
+      _activeTranslation = prefs.getString('active_translation') ?? 'ESV_bible';
     });
   }
 
@@ -54,24 +51,58 @@ class BibleVersionsScreenState extends State<BibleVersionsScreen> {
     setState(() {
       _downloading[translation] = true;
     });
-    await DatabaseHelper.instance.loadNewTranslation(translation);
-    final prefs = await SharedPreferences.getInstance();
-    final downloaded = prefs.getStringList('downloaded_translations') ?? [];
-    downloaded.add(translation);
-    await prefs.setStringList('downloaded_translations', downloaded);
-    setState(() {
-      _downloadedTranslations.add(translation);
-      _downloading[translation] = false;
-    });
+    try {
+      // This is a simplified download trigger.
+      // We'll fetch the first chapter of the first book to confirm it works.
+      await _firestoreService.getVerses(translation, 'Genesis', 1);
+      final prefs = await SharedPreferences.getInstance();
+      final downloaded = await DatabaseHelper.instance.getAvailableTranslations();
+      await prefs.setStringList('downloaded_translations', downloaded);
+      setState(() {
+        _downloadedTranslations.clear();
+        _downloadedTranslations.addAll(downloaded);
+      });
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Sorry, something went wrong :(')),
+      );
+    } finally {
+      setState(() {
+        _downloading[translation] = false;
+      });
+    }
+  }
+
+  String _getTranslationFullName(String translationCode) {
+    switch (translationCode) {
+      case 'ESV_bible':
+        return 'English Standard Version 2016';
+      case 'NLT_bible':
+        return 'New Living Translation';
+      case 'NIV_bible':
+        return 'New International Version';
+      case 'KJV_bible':
+        return 'King James Version';
+      case 'NKJV_bible':
+        return 'New King James Version';
+      case 'AMP_bible':
+        return 'Amplified Bible';
+      default:
+        return translationCode.replaceAll('_bible', '').toUpperCase();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bible Versions'),
+        title: const Text('Select Bible'),
+        elevation: 0,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        foregroundColor: Theme.of(context).textTheme.bodyLarge?.color,
       ),
-      body: FutureBuilder<List<String>>(
+      body: FutureBuilder<List<Map<String, dynamic>>>(
         future: _availableTranslationsFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -84,22 +115,54 @@ class BibleVersionsScreenState extends State<BibleVersionsScreen> {
           return ListView.builder(
             itemCount: availableTranslations.length,
             itemBuilder: (context, index) {
-              final translation = availableTranslations[index];
+              final translationData = availableTranslations[index];
+              final translation = translationData['name'] as String;
               final isDownloaded = _downloadedTranslations.contains(translation);
               final isActive = _activeTranslation == translation;
               final isDownloading = _downloading[translation] ?? false;
-              return ListTile(
-                title: Text(translation.toUpperCase()),
-                trailing: isDownloading
-                    ? const CircularProgressIndicator()
-                    : isDownloaded
-                        ? const Icon(Icons.check_circle, color: Colors.green)
-                        : IconButton(
-                            icon: const Icon(Icons.download),
-                            onPressed: () => _downloadTranslation(translation),
-                          ),
+              final fullName = _getTranslationFullName(translation);
+              final shortName = translation.replaceAll('_bible', '');
+
+              return GestureDetector(
                 onTap: isDownloaded ? () => _setActiveTranslation(translation) : null,
-                tileColor: isActive ? Colors.blue.withAlpha(51) : null,
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isActive ? Colors.lightBlue.withAlpha(51) : Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha(13),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(shortName, style: const TextStyle(fontWeight: FontWeight.bold)),
+                            Text(fullName),
+                            const Text('English'),
+                          ],
+                        ),
+                      ),
+                      if (isDownloading)
+                        const CircularProgressIndicator()
+                      else if (isActive)
+                        const Icon(Icons.check, color: Colors.blue)
+                      else if (!isDownloaded)
+                        IconButton(
+                          icon: const Icon(Icons.download),
+                          onPressed: () => _downloadTranslation(translation),
+                        ),
+                    ],
+                  ),
+                ),
               );
             },
           );
